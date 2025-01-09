@@ -30,7 +30,7 @@ func Toutiao() map[string]interface{} {
 		result["url"] = item.(map[string]interface{})["Url"]
 		hot, err := strconv.ParseFloat(item.(map[string]interface{})["HotValue"].(string), 64)
 		HandleError(err, "strconv.ParseFloat")
-		result["hotValue"] = fmt.Sprint(fmt.Sprintf("%.1f", hot/10000)) + "万"
+		result["hotValue"] = fmt.Sprintf("%.1f", hot/10000) + "万"
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
