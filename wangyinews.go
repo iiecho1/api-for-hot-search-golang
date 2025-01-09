@@ -29,8 +29,7 @@ func WangyiNews() map[string]interface{} {
 		result["url"] = item[1]
 		hot, err := strconv.ParseFloat(item[3], 64)
 		HandleError(err, "strconv.ParseFloat")
-
-		result["hotValue"] = fmt.Sprint(fmt.Sprintf("%.1f", hot/10000)) + "万"
+		result["hotValue"] = fmt.Sprintf("%.1f万", hot/10000)
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
