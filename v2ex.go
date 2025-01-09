@@ -13,7 +13,7 @@ func V2ex() map[string]interface{} {
 	pageBytes, err := io.ReadAll(resp.Body)
 	HandleError(err, "io.ReadAll")
 	// fmt.Println(string(pageBytes))
-	pattern := `<span class="item_hot_topic_title">\s<a href="(.*?)">(.*?)<\/a>\s<\/span>`
+	pattern := `<span class="item_hot_topic_title">\s*<a href="(.*?)">(.*?)<\/a>\s*<\/span>`
 	matched := ExtractMatches(string(pageBytes), pattern)
 
 	api := make(map[string]interface{})
