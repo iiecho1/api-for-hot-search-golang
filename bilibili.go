@@ -11,10 +11,11 @@ func Bilibili() map[string]interface{} {
 	url := "https://api.bilibili.com/x/web-interface/ranking/v2?rid=0&type=all"
 
 	req, err := http.NewRequest("GET", url, nil)
+	HandleError(err, "http.NewRequest")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
 	resp, err := http.DefaultClient.Do(req)
 
-	HandleError(err, "http.Get")
+	HandleError(err, "http.DefaultClient")
 	defer resp.Body.Close()
 
 	pageBytes, err := io.ReadAll(resp.Body)
