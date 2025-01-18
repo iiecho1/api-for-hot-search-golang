@@ -38,6 +38,7 @@ func main() {
 		"/kuake":      app.Quark,
 		"/souhu":      app.Souhu,
 		"/baidu":      app.Baidu,
+		"/renmin":     app.Renminwang,
 		"/all":        all.All,
 	}
 
@@ -48,5 +49,5 @@ func main() {
 		})
 	}
 
-	r.Run(":8080")
+	r.Run(":1111")
 }
