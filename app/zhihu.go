@@ -1,6 +1,7 @@
-package utils
+package app
 
 import (
+	"api/utils"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,18 +11,20 @@ import (
 func Zhihu() map[string]interface{} {
 	url := "https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total?limit=50&desktop=true"
 	resp, err := http.Get(url)
-	HandleError(err, "http.Get")
+	utils.HandleError(err, "http.Get")
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
-	HandleError(err, "io.ReadAll")
+	utils.HandleError(err, "io.ReadAll")
 	resultMap := make(map[string]interface{})
 	err = json.Unmarshal(pageBytes, &resultMap)
-	HandleError(err, "json.Unmarshal")
+	utils.HandleError(err, "json.Unmarshal")
 
 	data := resultMap["data"]
 
 	api := make(map[string]interface{})
 	api["code"] = 200
+	api["message"] = "知乎"
+
 	var obj []map[string]interface{}
 
 	for index, item := range data.([]interface{}) {

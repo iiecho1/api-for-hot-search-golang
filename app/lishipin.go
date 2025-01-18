@@ -1,6 +1,7 @@
-package utils
+package app
 
 import (
+	"api/utils"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,16 +10,17 @@ import (
 func Lishipin() map[string]interface{} {
 	url := "https://www.pearvideo.com/popular"
 	resp, err := http.Get(url)
-	HandleError(err, "http.Get")
+	utils.HandleError(err, "http.Get")
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
-	HandleError(err, "io.ReadAll")
+	utils.HandleError(err, "io.ReadAll")
 
 	pattern := `<a\shref="(.*?)".*?>\s*<h2\sclass="popularem-title">(.*?)</h2>\s*<p\sclass="popularem-abs padshow">(.*?)</p>`
-	matched := ExtractMatches(string(pageBytes), pattern)
+	matched := utils.ExtractMatches(string(pageBytes), pattern)
 
 	api := make(map[string]interface{})
 	api["code"] = 200
+	api["message"] = "梨视频"
 
 	var obj []map[string]interface{}
 

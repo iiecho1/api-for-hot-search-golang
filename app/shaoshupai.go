@@ -1,6 +1,7 @@
-package utils
+package app
 
 import (
+	"api/utils"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,16 +11,17 @@ import (
 func Shaoshupai() map[string]interface{} {
 	url := "https://sspai.com/api/v1/article/tag/page/get?limit=100000&tag=%E7%83%AD%E9%97%A8%E6%96%87%E7%AB%A0"
 	resp, err := http.Get(url)
-	HandleError(err, "http.Get")
+	utils.HandleError(err, "http.Get")
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
-	HandleError(err, "io.ReadAll")
+	utils.HandleError(err, "io.ReadAll")
 	resultMap := make(map[string]interface{})
-	err = json.Unmarshal(pageBytes, &resultMap)
+	_ = json.Unmarshal(pageBytes, &resultMap)
 
 	data := resultMap["data"].([]interface{})
 	api := make(map[string]interface{})
 	api["code"] = 200
+	api["message"] = "少数派"
 
 	var obj []map[string]interface{}
 

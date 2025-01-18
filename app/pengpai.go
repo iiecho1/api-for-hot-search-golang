@@ -1,6 +1,7 @@
-package utils
+package app
 
 import (
+	"api/utils"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,15 +11,16 @@ import (
 func Pengpai() map[string]interface{} {
 	url := "https://cache.thepaper.cn/contentapi/wwwIndex/rightSidebar"
 	resp, err := http.Get(url)
-	HandleError(err, "http.Get")
+	utils.HandleError(err, "http.Get")
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
-	HandleError(err, "io.ReadAll")
+	utils.HandleError(err, "io.ReadAll")
 	resultMap := make(map[string]interface{})
-	err = json.Unmarshal(pageBytes, &resultMap)
+	_ = json.Unmarshal(pageBytes, &resultMap)
 
 	api := make(map[string]interface{})
 	api["code"] = 200
+	api["message"] = "澎湃新闻"
 
 	data := resultMap["data"].(map[string]interface{})["hotNews"].([]interface{})
 

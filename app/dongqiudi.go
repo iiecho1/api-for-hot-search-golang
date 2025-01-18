@@ -1,6 +1,7 @@
-package utils
+package app
 
 import (
+	"api/utils"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -9,18 +10,19 @@ import (
 func Dongqiudi() map[string]interface{} {
 	url := "https://dongqiudi.com/api/v3/archive/pc/index/getIndex"
 	resp, err := http.Get(url)
-	HandleError(err, "http.Get")
+	utils.HandleError(err, "http.Get")
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
-	HandleError(err, "io.ReadAll")
+	utils.HandleError(err, "io.ReadAll")
 	var resultMap map[string]interface{}
 	err = json.Unmarshal(pageBytes, &resultMap)
-	HandleError(err, "json.Unmarshal")
+	utils.HandleError(err, "json.Unmarshal")
 
 	data := resultMap["data"].(map[string]interface{})["new_list"]
 
 	api := make(map[string]interface{})
 	api["code"] = 200
+	api["message"] = "懂球帝"
 	var obj []map[string]interface{}
 
 	for index, item := range data.([]interface{}) {

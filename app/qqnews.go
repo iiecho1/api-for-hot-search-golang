@@ -1,6 +1,7 @@
-package utils
+package app
 
 import (
+	"api/utils"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,16 +11,17 @@ import (
 func Qqnews() map[string]interface{} {
 	url := "https://r.inews.qq.com/gw/event/hot_ranking_list?page_size=51"
 	resp, err := http.Get(url)
-	HandleError(err, "http.Get")
+	utils.HandleError(err, "http.Get")
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
-	HandleError(err, "io.ReadAll")
+	utils.HandleError(err, "io.ReadAll")
 	resultMap := make(map[string]interface{})
-	err = json.Unmarshal(pageBytes, &resultMap)
+	_ = json.Unmarshal(pageBytes, &resultMap)
 
 	newslist := resultMap["idlist"].([]interface{})[0].(map[string]interface{})["newslist"].([]interface{})
 	api := make(map[string]interface{})
 	api["code"] = 200
+	api["message"] = "腾讯新闻"
 
 	var obj []map[string]interface{}
 

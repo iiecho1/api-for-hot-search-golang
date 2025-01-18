@@ -1,6 +1,7 @@
-package utils
+package app
 
 import (
+	"api/utils"
 	"io"
 	"net/http"
 )
@@ -8,16 +9,16 @@ import (
 func Ithome() map[string]interface{} {
 	url := "https://m.ithome.com/rankm/"
 	resp, err := http.Get(url)
-	HandleError(err, "http.Get")
+	utils.HandleError(err, "http.Get")
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
-	HandleError(err, "io.ReadAll")
+	utils.HandleError(err, "io.ReadAll")
 	pattern := `<p class="plc-title">(.*?)<\/p>.*?<a href="(.*?)"`
-	matches := ExtractMatches(string(pageBytes), pattern)
+	matches := utils.ExtractMatches(string(pageBytes), pattern)
 
 	api := make(map[string]interface{})
 	api["code"] = 200
-	api["message"] = "It之家日榜"
+	api["message"] = "It之家"
 	var obj []map[string]interface{}
 	for index, item := range matches[:12] {
 		result := make(map[string]interface{})

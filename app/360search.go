@@ -1,6 +1,7 @@
-package utils
+package app
 
 import (
+	"api/utils"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,18 +12,18 @@ import (
 func Search360() map[string]interface{} {
 	url := "https://ranks.hao.360.com/mbsug-api/hotnewsquery?type=news&realhot_limit=50"
 	resp, err := http.Get(url)
-	HandleError(err, "http.Get error")
+	utils.HandleError(err, "http.Get error")
 	defer resp.Body.Close()
 	// 2.读取页面内容
 	pageBytes, err := io.ReadAll(resp.Body)
-	HandleError(err, "io.ReadAll error")
+	utils.HandleError(err, "io.ReadAll error")
 	var resultSlice []map[string]interface{}
 	err = json.Unmarshal(pageBytes, &resultSlice)
-	HandleError(err, "json.Unmarshal error")
+	utils.HandleError(err, "json.Unmarshal error")
 
 	api := make(map[string]interface{})
 	api["code"] = 200
-
+	api["message"] = "360搜索"
 	var obj []map[string]interface{}
 	for _, item := range resultSlice {
 		result := make(map[string]interface{})
@@ -35,7 +36,7 @@ func Search360() map[string]interface{} {
 		}
 
 		hot, err := strconv.ParseFloat(item["score"].(string), 64)
-		HandleError(err, "strconv.ParseFloat")
+		utils.HandleError(err, "strconv.ParseFloat")
 
 		result["hotValue"] = fmt.Sprintf("%.1f", hot/10000) + "万"
 		result["url"] = item["url"]

@@ -1,6 +1,7 @@
-package utils
+package app
 
 import (
+	"api/utils"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -47,19 +48,20 @@ func History() map[string]interface{} {
 	day := fmt.Sprintf("%02d", currentTime.Day())
 	url := "https://baike.baidu.com/cms/home/eventsOnHistory/" + fmt.Sprint(month) + ".json"
 	resp, err := http.Get(url)
-	HandleError(err, "http.Get")
+	utils.HandleError(err, "http.Get")
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
-	HandleError(err, "io.ReadAll error")
+	utils.HandleError(err, "io.ReadAll error")
 	var resultMap map[string]interface{}
 	err = json.Unmarshal(pageBytes, &resultMap)
-	HandleError(err, "io.json.Unmarshal error")
+	utils.HandleError(err, "io.json.Unmarshal error")
 
 	date := fmt.Sprintf("%v%v", month, day)
 	dateList := resultMap[month].(map[string]interface{})[date]
 
 	api := make(map[string]interface{})
 	api["code"] = 200
+	api["message"] = "历史上的今天"
 
 	var obj []map[string]interface{}
 	for index, item := range dateList.([]interface{}) {

@@ -1,6 +1,7 @@
-package utils
+package app
 
 import (
+	"api/utils"
 	"io"
 	"net/http"
 )
@@ -8,16 +9,18 @@ import (
 func V2ex() map[string]interface{} {
 	url := "https://www.v2ex.com"
 	resp, err := http.Get(url)
-	HandleError(err, "http.Get")
+	utils.HandleError(err, "http.Get")
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
-	HandleError(err, "io.ReadAll")
-	// fmt.Println(string(pageBytes))
+	utils.HandleError(err, "io.ReadAll")
 	pattern := `<span class="item_hot_topic_title">\s*<a href="(.*?)">(.*?)<\/a>\s*<\/span>`
-	matched := ExtractMatches(string(pageBytes), pattern)
+	matched := utils.ExtractMatches(string(pageBytes), pattern)
+
+	// fmt.Println(matched)
 
 	api := make(map[string]interface{})
 	api["code"] = 200
+	api["message"] = "V2EX"
 
 	var obj []map[string]interface{}
 

@@ -1,6 +1,7 @@
-package utils
+package app
 
 import (
+	"api/utils"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,17 +12,18 @@ import (
 func CSDN() map[string]interface{} {
 	url := "https://blog.csdn.net/phoenix/web/blog/hotRank?&pageSize=100"
 	resp, err := http.Get(url)
-	HandleError(err, "http.Get")
+	utils.HandleError(err, "http.Get")
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
-	HandleError(err, "io.ReadAll")
+	utils.HandleError(err, "io.ReadAll")
 	var resultMap map[string]interface{}
 	err = json.Unmarshal(pageBytes, &resultMap)
-	HandleError(err, "json.Umarshal")
+	utils.HandleError(err, "json.Umarshal")
 	data := resultMap["data"]
 
 	api := make(map[string]interface{})
 	api["code"] = 200
+	api["message"] = "CSDN"
 	var obj []map[string]interface{}
 
 	for index, item := range data.([]interface{}) {
@@ -30,7 +32,7 @@ func CSDN() map[string]interface{} {
 		result["title"] = item.(map[string]interface{})["articleTitle"]
 		result["url"] = item.(map[string]interface{})["articleDetailUrl"]
 		hot, err := strconv.ParseFloat(item.(map[string]interface{})["hotRankScore"].(string), 64)
-		HandleError(err, "strconv.ParseFloat")
+		utils.HandleError(err, "strconv.ParseFloat")
 		result["hotValue"] = fmt.Sprintf("%.1f", hot/10000) + "万"
 		obj = append(obj, result)
 	}
