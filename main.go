@@ -40,6 +40,7 @@ func main() {
 		"/baidu":      app.Baidu,
 		"/renmin":     app.Renminwang,
 		"/nanfang":    app.Nanfangzhoumo,
+		"/360doc":     app.Doc360,
 		"/all":        all.All,
 	}
 

@@ -37,6 +37,7 @@ func All() map[string]interface{} {
 		"百度":     app.Baidu,
 		"人民网":    app.Renminwang,
 		"南方周末":   app.Nanfangzhoumo,
+		"360doc": app.Doc360,
 	}
 
 	allResult := make(map[string]interface{})
