@@ -41,6 +41,7 @@ func main() {
 		"/renmin":     app.Renminwang,
 		"/nanfang":    app.Nanfangzhoumo,
 		"/360doc":     app.Doc360,
+		"/cctv":       app.CCTV,
 		"/all":        all.All,
 	}
 
