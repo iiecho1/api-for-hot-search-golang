@@ -34,5 +34,6 @@ func CCTV() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://news.cctv.com/favicon.ico" // 16 x 16
 	return api
 }

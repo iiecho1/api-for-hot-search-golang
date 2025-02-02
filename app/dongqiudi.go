@@ -33,5 +33,6 @@ func Dongqiudi() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://www.dongqiudi.com/images/dqd-logo.png" // 800 x 206
 	return api
 }

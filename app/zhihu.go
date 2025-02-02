@@ -36,5 +36,6 @@ func Zhihu() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://static.zhihu.com/static/favicon.ico" // 32 x 32
 	return api
 }

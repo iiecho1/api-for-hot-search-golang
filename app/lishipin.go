@@ -33,5 +33,6 @@ func Lishipin() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://page.pearvideo.com/webres/img/logo.png" // 76 x 98
 	return api
 }

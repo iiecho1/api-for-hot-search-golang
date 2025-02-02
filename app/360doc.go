@@ -31,5 +31,6 @@ func Doc360() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "http://www.360doc.com/favicon.ico" // 16 x 16
 	return api
 }

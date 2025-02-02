@@ -34,5 +34,6 @@ func Github() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://github.githubassets.com/favicons/favicon.png" // 32 x 32
 	return api
 }

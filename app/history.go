@@ -72,5 +72,6 @@ func History() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://baike.baidu.com/favicon.ico" // 64 x 64
 	return api
 }

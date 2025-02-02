@@ -31,5 +31,6 @@ func Renminwang() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "http://www.people.com.cn/favicon.ico" // 16 x 16
 	return api
 }
