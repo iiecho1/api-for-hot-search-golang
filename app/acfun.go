@@ -38,5 +38,6 @@ func Acfun() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://cdn.aixifan.com/ico/favicon.ico" // 32 x 32
 	return api
 }

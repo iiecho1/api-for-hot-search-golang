@@ -33,5 +33,6 @@ func Shaoshupai() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://cdn-static.sspai.com/favicon/sspai.ico" // 64 x 64
 	return api
 }

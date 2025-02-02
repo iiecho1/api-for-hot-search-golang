@@ -32,5 +32,6 @@ func V2ex() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://www.v2ex.com/static/img/icon_rayps_64.png" // 64 x 64
 	return api
 }

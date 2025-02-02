@@ -43,5 +43,6 @@ func Search360() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://ss.360tres.com/static/121a1737750aa53d.ico" // 32 x 32
 	return api
 }

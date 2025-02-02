@@ -34,5 +34,6 @@ func Pengpai() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://www.thepaper.cn/favicon.ico" // 32 x 32
 	return api
 }

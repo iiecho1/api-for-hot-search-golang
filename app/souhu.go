@@ -38,5 +38,6 @@ func Souhu() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://3g.k.sohu.com/favicon.ico" // 48 x 48
 	return api
 }

@@ -31,5 +31,6 @@ func Baidu() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://www.baidu.com/favicon.ico" // 64 x 64
 	return api
 }

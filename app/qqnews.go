@@ -38,5 +38,6 @@ func Qqnews() map[string]interface{} {
 		}
 	}
 	api["obj"] = obj
+	api["icon"] = "https://mat1.gtimg.com/qqcdn/qqindex2021/favicon.ico" // 96 x 96
 	return api
 }

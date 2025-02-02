@@ -39,5 +39,6 @@ func WeiboHot() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	json["obj"] = obj
+	json["icon"] = "https://www.weibo.com/favicon.ico" // 32 x 32
 	return json
 }

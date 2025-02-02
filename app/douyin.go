@@ -37,5 +37,6 @@ func Douyin() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://lf1-cdn-tos.bytegoofy.com/goofy/ies/douyin_web/public/favicon.ico" // 32 x 32
 	return api
 }

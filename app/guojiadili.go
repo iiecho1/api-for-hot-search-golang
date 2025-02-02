@@ -30,5 +30,6 @@ func Guojiadili() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "http://www.dili360.com/favicon.ico" // 32 x 32
 	return api
 }

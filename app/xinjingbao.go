@@ -31,5 +31,6 @@ func Xinjingbao() map[string]interface{} {
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
+	api["icon"] = "https://www.bjnews.com.cn/favicon.ico" // 20 x 20
 	return api
 }
