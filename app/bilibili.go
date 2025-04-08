@@ -8,6 +8,18 @@ import (
 	"net/http"
 )
 
+type bilibiliResponse struct {
+	Data bilibiliList `json:"data"`
+}
+
+type bilibiliList struct {
+	List []bilibiliData `json:"list"`
+}
+type bilibiliData struct {
+	Title string `json:"title"`
+	Bvid  string `json:"bvid"`
+}
+
 func Bilibili() map[string]interface{} {
 	url := "https://api.bilibili.com/x/web-interface/ranking/v2?rid=0&type=all"
 
@@ -21,43 +33,15 @@ func Bilibili() map[string]interface{} {
 
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll")
-	var resultMap map[string]interface{}
+	var resultMap bilibiliResponse
 	err = json.Unmarshal(pageBytes, &resultMap)
 	utils.HandleError(err, "json.Unmarshal error")
 
 	// 检查 resultMap["data"] 是否存在且类型正确
-	data, ok := resultMap["data"]
-	if !ok || data == nil {
+	if len(resultMap.Data.List) == 0 {
 		return map[string]interface{}{
 			"code":    500,
-			"message": "API 返回的数据格式不正确",
-		}
-	}
-
-	// 检查 data 是否为 map[string]interface{} 类型
-	dataMap, ok := data.(map[string]interface{})
-	if !ok {
-		return map[string]interface{}{
-			"code":    500,
-			"message": "API 返回的 data 字段格式不正确",
-		}
-	}
-
-	// 检查 dataMap["list"] 是否存在且类型正确
-	list, ok := dataMap["list"]
-	if !ok || list == nil {
-		return map[string]interface{}{
-			"code":    500,
-			"message": "API 返回的 list 字段格式不正确",
-		}
-	}
-
-	// 检查 list 是否为 []interface{} 类型
-	listSlice, ok := list.([]interface{})
-	if !ok {
-		return map[string]interface{}{
-			"code":    500,
-			"message": "API 返回的 list 字段不是数组类型",
+			"message": "API返回数据为空或格式不正确，实际返回数据：" + fmt.Sprintf("%+v", resultMap.Data),
 		}
 	}
 
@@ -66,11 +50,11 @@ func Bilibili() map[string]interface{} {
 	api["code"] = 200
 	api["message"] = "哔哩哔哩"
 	var obj []map[string]interface{}
-	for index, item := range listSlice {
+	for index, item := range resultMap.Data.List {
 		result := make(map[string]interface{})
 		result["index"] = index + 1
-		result["title"] = item.(map[string]interface{})["title"]
-		result["url"] = "https://www.bilibili.com/video/" + fmt.Sprint(item.(map[string]interface{})["bvid"])
+		result["title"] = item.Title
+		result["url"] = "https://www.bilibili.com/video/" + fmt.Sprint(item.Bvid)
 		obj = append(obj, result)
 	}
 	api["obj"] = obj

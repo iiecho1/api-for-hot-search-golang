@@ -7,6 +7,14 @@ import (
 	"net/http"
 )
 
+type acfunResponse struct {
+	RankList []acfunData `json:"rankList"`
+}
+type acfunData struct {
+	Title string `json:"contentTitle"`
+	URL   string `json:"shareUrl"`
+}
+
 func Acfun() map[string]interface{} {
 	url := "https://www.acfun.cn/rest/pc-direct/rank/channel?channelId=&subChannelId=&rankLimit=30&rankPeriod=DAY"
 	// 创建一个自定义请求
@@ -20,21 +28,20 @@ func Acfun() map[string]interface{} {
 
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll error")
-	var resultMap map[string]interface{}
+	var resultMap acfunResponse
 	err = json.Unmarshal(pageBytes, &resultMap)
 	utils.HandleError(err, "json.Unmarshal error")
-	rankList := resultMap["rankList"]
 
 	api := make(map[string]interface{})
 	api["code"] = 200
 	api["message"] = "AcFun"
 	var obj []map[string]interface{}
 
-	for index, item := range rankList.([]interface{}) {
+	for index, item := range resultMap.RankList {
 		result := make(map[string]interface{})
 		result["index"] = index + 1
-		result["title"] = item.(map[string]interface{})["contentTitle"]
-		result["url"] = item.(map[string]interface{})["shareUrl"]
+		result["title"] = item.Title
+		result["url"] = item.URL
 		obj = append(obj, result)
 	}
 	api["obj"] = obj
