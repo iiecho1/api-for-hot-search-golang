@@ -9,10 +9,9 @@ import (
 )
 
 type DoubanItem struct {
-	Score     float64 `json:"score"`
-	TrendFlag int     `json:"trend_flag"`
-	Name      string  `json:"name"`
-	URI       string  `json:"uri"`
+	Score float64 `json:"score"`
+	Name  string  `json:"name"`
+	URI   string  `json:"uri"`
 }
 
 func Douban() map[string]interface{} {
