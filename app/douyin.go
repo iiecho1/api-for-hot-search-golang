@@ -17,6 +17,7 @@ func Douyin() map[string]interface{} {
 	// 2.读取页面内容
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll")
+
 	var resultMap map[string]interface{}
 	_ = json.Unmarshal(pageBytes, &resultMap)
 
