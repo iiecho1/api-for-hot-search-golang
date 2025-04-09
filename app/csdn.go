@@ -3,11 +3,18 @@ package app
 import (
 	"api/utils"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 )
+
+type csdbResponse struct {
+	Data []csdnData `json:"data"`
+}
+type csdnData struct {
+	Title    string `json:"articleTitle"`
+	URL      string `json:"articleDetailUrl"`
+	HotValue string `json:"pcHotRankScore"`
+}
 
 func CSDN() map[string]interface{} {
 	url := "https://blog.csdn.net/phoenix/web/blog/hotRank?&pageSize=100"
@@ -16,24 +23,22 @@ func CSDN() map[string]interface{} {
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll")
-	var resultMap map[string]interface{}
+	var resultMap csdbResponse
 	err = json.Unmarshal(pageBytes, &resultMap)
 	utils.HandleError(err, "json.Umarshal")
-	data := resultMap["data"]
+	data := resultMap.Data
 
 	api := make(map[string]interface{})
 	api["code"] = 200
 	api["message"] = "CSDN"
 	var obj []map[string]interface{}
 
-	for index, item := range data.([]interface{}) {
+	for index, item := range data {
 		result := make(map[string]interface{})
 		result["index"] = index + 1
-		result["title"] = item.(map[string]interface{})["articleTitle"]
-		result["url"] = item.(map[string]interface{})["articleDetailUrl"]
-		hot, err := strconv.ParseFloat(item.(map[string]interface{})["hotRankScore"].(string), 64)
-		utils.HandleError(err, "strconv.ParseFloat")
-		result["hotValue"] = fmt.Sprintf("%.1f", hot/10000) + "万"
+		result["title"] = item.Title
+		result["url"] = item.URL
+		result["hotValue"] = item.HotValue
 		obj = append(obj, result)
 	}
 	api["obj"] = obj

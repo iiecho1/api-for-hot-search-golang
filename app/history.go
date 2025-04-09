@@ -42,6 +42,7 @@ func stripHTML(htmlString string) string {
 	// 返回结果的字符串形式
 	return result.String()
 }
+
 func History() map[string]interface{} {
 	currentTime := time.Now()
 	month := fmt.Sprintf("%02d", currentTime.Month())
