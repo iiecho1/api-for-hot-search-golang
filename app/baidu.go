@@ -17,20 +17,19 @@ func Baidu() map[string]interface{} {
 	pattern := `<div\sclass="c-single-text-ellipsis">(.*?)</div?`
 	matched := utils.ExtractMatches(string(pageBytes), pattern)
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "百度"
-
 	var obj []map[string]interface{}
-
 	for index, item := range matched {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = strings.TrimSpace(item[1])
-		result["url"] = "https://www.baidu.com/s?wd=" + result["title"].(string)
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": strings.TrimSpace(item[1]),
+			"url":   "https://www.baidu.com/s?wd=" + strings.TrimSpace(item[1]),
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://www.baidu.com/favicon.ico" // 64 x 64
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "百度",
+		"icon":    "https://www.baidu.com/favicon.ico", // 64 x 64
+		"obj":     obj,
+	}
 	return api
 }

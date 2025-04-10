@@ -7,13 +7,13 @@ import (
 	"net/http"
 )
 
-type response struct {
-	Data dongqiudiData `json:"data"`
+type dqdresponse struct {
+	Data dqdList `json:"data"`
 }
-type dongqiudiData struct {
-	NewList []data `json:"new_list"`
+type dqdList struct {
+	NewList []dqddata `json:"new_list"`
 }
-type data struct {
+type dqddata struct {
 	Title string `json:"title"`
 	URL   string `json:"share"`
 }
@@ -25,25 +25,25 @@ func Dongqiudi() map[string]interface{} {
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll")
-	var resultMap response
+	var resultMap dqdresponse
 	err = json.Unmarshal(pageBytes, &resultMap)
 	utils.HandleError(err, "json.Unmarshal")
 
 	data := resultMap.Data.NewList
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "懂球帝"
 	var obj []map[string]interface{}
-
 	for index, item := range data {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.Title
-		result["url"] = item.URL
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": item.Title,
+			"url":   item.URL,
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://www.dongqiudi.com/images/dqd-logo.png" // 800 x 206
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "懂球帝",
+		"icon":    "https://www.dongqiudi.com/images/dqd-logo.png", // 800 x 206
+		"obj":     obj,
+	}
 	return api
 }

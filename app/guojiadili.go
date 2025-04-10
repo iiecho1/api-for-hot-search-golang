@@ -16,20 +16,19 @@ func Guojiadili() map[string]interface{} {
 	pattern := `<li>\s*<span>\d*</span>\s*<h3><a href="(.*?)" target="_blank">(.*?)</a>`
 	matched := utils.ExtractMatches(string(pageBytes), pattern)
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "国家地理"
-
 	var obj []map[string]interface{}
-
 	for index, item := range matched {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item[2]
-		result["url"] = "http://www.dili360.com" + item[1]
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": item[2],
+			"url":   "http://www.dili360.com" + item[1],
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "http://www.dili360.com/favicon.ico" // 32 x 32
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "国家地理",
+		"icon":    "http://www.dili360.com/favicon.ico", // 32 x 32
+		"obj":     obj,
+	}
 	return api
 }

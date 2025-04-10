@@ -30,22 +30,20 @@ func Douyin() map[string]interface{} {
 	_ = json.Unmarshal(pageBytes, &resultMap)
 
 	wordList := resultMap.WordList
-
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "抖音"
-
 	var obj []map[string]interface{}
 	for index, item := range wordList {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.Title
-		hot := item.HotVaule / 10000
-		result["hotValue"] = fmt.Sprint(hot) + "万"
-		result["url"] = "https://www.douyin.com/search/" + item.Title
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index":    index + 1,
+			"title":    item.Title,
+			"url":      "https://www.douyin.com/search/" + item.Title,
+			"hotValue": fmt.Sprintf("%.2f万", item.HotVaule/10000),
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://lf1-cdn-tos.bytegoofy.com/goofy/ies/douyin_web/public/favicon.ico" // 32 x 32
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "抖音",
+		"icon":    "https://lf1-cdn-tos.bytegoofy.com/goofy/ies/douyin_web/public/favicon.ico", // 32 x 32
+		"obj":     obj,
+	}
 	return api
 }

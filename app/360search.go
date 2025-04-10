@@ -30,28 +30,27 @@ func Search360() map[string]interface{} {
 	err = json.Unmarshal([]byte(string(pageBytes)), &resultSlice)
 	utils.HandleError(err, "json.Unmarshal error")
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "360搜索"
 	var obj []map[string]interface{}
 	for _, item := range resultSlice {
-		result := make(map[string]interface{})
-		result["index"] = item.Rank
-
-		if item.LongTitle == "" {
-			result["title"] = item.Title
-		} else {
-			result["title"] = item.LongTitle
+		title := item.Title
+		if item.LongTitle != "" {
+			title = item.LongTitle
 		}
-
 		hot, err := strconv.ParseFloat(item.Score, 64)
 		utils.HandleError(err, "strconv.ParseFloat")
 
-		result["hotValue"] = fmt.Sprintf("%.1f", hot/10000) + "万"
-		result["url"] = item.URL
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index":    item.Rank,
+			"title":    title,
+			"hotValue": fmt.Sprintf("%.1f万", hot/10000),
+			"url":      item.URL,
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://ss.360tres.com/static/121a1737750aa53d.ico" // 32 x 32
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "夸克",
+		"icon":    "https://ss.360tres.com/static/121a1737750aa53d.ico",
+		"obj":     obj,
+	}
 	return api
 }

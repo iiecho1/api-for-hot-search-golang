@@ -32,19 +32,21 @@ func Acfun() map[string]interface{} {
 	err = json.Unmarshal(pageBytes, &resultMap)
 	utils.HandleError(err, "json.Unmarshal error")
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "AcFun"
 	var obj []map[string]interface{}
 
 	for index, item := range resultMap.RankList {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.Title
-		result["url"] = item.URL
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": item.Title,
+			"url":   item.URL,
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://cdn.aixifan.com/ico/favicon.ico" // 32 x 32
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "AcFun",
+		"icon":    "https://cdn.aixifan.com/ico/favicon.ico", // 32 x 32
+		"obj":     obj,
+	}
+
 	return api
 }

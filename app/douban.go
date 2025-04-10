@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-type DoubanItem struct {
+type doubanItem struct {
 	Score float64 `json:"score"`
 	Name  string  `json:"name"`
 	URI   string  `json:"uri"`
@@ -35,24 +35,23 @@ func Douban() map[string]interface{} {
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll")
 
-	var items []DoubanItem
+	var items []doubanItem
 	_ = json.Unmarshal([]byte(string(pageBytes)), &items)
-
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "豆瓣"
 
 	var obj []map[string]interface{}
 	for index, item := range items {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.Name
-		hot := item.Score
-		result["hotValue"] = fmt.Sprint(hot/10000) + "万"
-		result["url"] = item.URI
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index":    index + 1,
+			"title":    item.Name,
+			"url":      item.URI,
+			"hotValue": fmt.Sprintf("%.2f万", item.Score/10000),
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://www.douban.com/favicon.ico" // 32 x 32
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "豆瓣",
+		"icom":    "https://www.douban.com/favicon.ico", // 32 x 32
+		"obj":     obj,
+	}
 	return api
 }

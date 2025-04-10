@@ -45,19 +45,19 @@ func Bilibili() map[string]interface{} {
 		}
 	}
 
-	// data := resultMap["data"].(map[string]interface{})["list"]
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "哔哩哔哩"
 	var obj []map[string]interface{}
 	for index, item := range resultMap.Data.List {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.Title
-		result["url"] = "https://www.bilibili.com/video/" + fmt.Sprint(item.Bvid)
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": item.Title,
+			"url":   "https://www.bilibili.com/video/" + fmt.Sprint(item.Bvid),
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://www.bilibili.com/favicon.ico" // 32 x 32
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "哔哩哔哩",
+		"icon":    "https://www.bilibili.com/favicon.ico", // 32 x 32
+		"obj":     obj,
+	}
 	return api
 }
