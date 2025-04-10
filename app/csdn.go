@@ -28,20 +28,20 @@ func CSDN() map[string]interface{} {
 	utils.HandleError(err, "json.Umarshal")
 	data := resultMap.Data
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "CSDN"
 	var obj []map[string]interface{}
-
 	for index, item := range data {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.Title
-		result["url"] = item.URL
-		result["hotValue"] = item.HotValue
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index":    index + 1,
+			"title":    item.Title,
+			"url":      item.URL,
+			"hotValue": item.HotValue,
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://csdnimg.cn/public/favicon.ico" // 32 x 32
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "CSDN",
+		"icon":    "https://csdnimg.cn/public/favicon.ico", // 32 x 32
+		"obj":     obj,
+	}
 	return api
 }

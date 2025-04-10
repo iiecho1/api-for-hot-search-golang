@@ -31,19 +31,20 @@ func CCTV() map[string]interface{} {
 	// 删除多余字符，解析json
 	_ = json.Unmarshal(pageBytes[6:len(pageBytes)-1], &resultMap)
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "CCTV"
 	var obj []map[string]interface{}
 
 	for index, item := range resultMap.Data.List {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.Title
-		result["url"] = item.URL
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": item.Title,
+			"url":   item.URL,
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://news.cctv.com/favicon.ico" // 16 x 16
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "CCTV",
+		"icon":    "https://news.cctv.com/favicon.ico", // 16 x 16
+		"obj":     obj,
+	}
 	return api
 }
