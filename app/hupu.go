@@ -17,20 +17,19 @@ func Hupu() map[string]interface{} {
 	pattern := `<a\s+href="([^"]+)"[^>]+>\s*<div[^>]+>\s*<div[^>]+>\d+</div>\s*<div[^>]+>(.*?)</div>`
 	matches := utils.ExtractMatches(string(pageBytes), pattern)
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "虎扑"
-
 	var obj []map[string]interface{}
-
 	for index, item := range matches {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item[2]
-		result["url"] = item[1]
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": item[2],
+			"url":   item[1],
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://www.hupu.com/favicon.ico" // 32 x 32
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "虎扑",
+		"icon":    "https://www.hupu.com/favicon.ico", // 32 x 32
+		"obj":     obj,
+	}
 	return api
 }

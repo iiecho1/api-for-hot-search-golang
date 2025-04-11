@@ -8,10 +8,10 @@ import (
 	"strconv"
 )
 
-type Response struct {
-	NfzmData Data `json:"data"`
+type nfResponse struct {
+	NfzmData nfData `json:"data"`
 }
-type Data struct {
+type nfData struct {
 	HotContents []contents `json:"hot_contents"`
 }
 type contents struct {
@@ -27,24 +27,24 @@ func Nanfangzhoumo() map[string]interface{} {
 	// 2.读取页面内容
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll")
-	var resultMap Response
+	var resultMap nfResponse
 	_ = json.Unmarshal(pageBytes, &resultMap)
 
 	wordList := resultMap.NfzmData.HotContents
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "南方周末"
-
 	var obj []map[string]interface{}
 	for index, item := range wordList {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.Title
-		result["url"] = "https://www.infzm.com/contents/" + strconv.FormatFloat(item.ID, 'f', -1, 64)
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": item.Title,
+			"url":   "https://www.infzm.com/contents/" + strconv.FormatFloat(item.ID, 'f', -1, 64),
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://www.infzm.com/favicon.ico" // 32 x 32
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "南方周末",
+		"icon":    "https://www.infzm.com/favicon.ico", // 32 x 32
+		"obj":     obj,
+	}
 	return api
 }

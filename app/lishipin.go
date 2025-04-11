@@ -18,21 +18,20 @@ func Lishipin() map[string]interface{} {
 	pattern := `<a\shref="(.*?)".*?>\s*<h2\sclass="popularem-title">(.*?)</h2>\s*<p\sclass="popularem-abs padshow">(.*?)</p>`
 	matched := utils.ExtractMatches(string(pageBytes), pattern)
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "梨视频"
-
 	var obj []map[string]interface{}
-
 	for index, item := range matched {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item[2]
-		result["url"] = "https://www.pearvideo.com/" + fmt.Sprint(item[1])
-		result["desc"] = item[3]
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": item[2],
+			"url":   "https://www.pearvideo.com/" + fmt.Sprint(item[1]),
+			"desc":  item[3],
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://page.pearvideo.com/webres/img/logo.png" // 76 x 98
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "梨视频",
+		"icon":    "https://page.pearvideo.com/webres/img/logo.png", // 76 x 98
+		"obj":     obj,
+	}
 	return api
 }

@@ -28,22 +28,21 @@ func Pengpai() map[string]interface{} {
 	var resultMap ppResponse
 	_ = json.Unmarshal(pageBytes, &resultMap)
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "澎湃新闻"
-
 	data := resultMap.Data.HotNews
 
 	var obj []map[string]interface{}
-
 	for index, item := range data {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.Title
-		result["url"] = "https://www.thepaper.cn/newsDetail_forward_" + item.ContId
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": item.Title,
+			"url":   "https://www.thepaper.cn/newsDetail_forward_" + item.ContId,
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://www.thepaper.cn/favicon.ico" // 32 x 32
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "澎湃新闻",
+		"icon":    "https://www.thepaper.cn/favicon.ico", // 32 x 32
+		"obj":     obj,
+	}
 	return api
 }
