@@ -8,6 +8,14 @@ import (
 	"net/http"
 )
 
+type sspResponse struct {
+	Data []sspData `json:"data"`
+}
+type sspData struct {
+	Title string `json:"title"`
+	ID    int    `json:"id"`
+}
+
 func Shaoshupai() map[string]interface{} {
 	url := "https://sspai.com/api/v1/article/tag/page/get?limit=100000&tag=%E7%83%AD%E9%97%A8%E6%96%87%E7%AB%A0"
 	resp, err := http.Get(url)
@@ -15,24 +23,24 @@ func Shaoshupai() map[string]interface{} {
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll")
-	resultMap := make(map[string]interface{})
+	var resultMap sspResponse
 	_ = json.Unmarshal(pageBytes, &resultMap)
 
-	data := resultMap["data"].([]interface{})
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "少数派"
+	data := resultMap.Data
 
 	var obj []map[string]interface{}
-
 	for index, item := range data {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.(map[string]interface{})["title"]
-		result["url"] = "https://sspai.com/post/" + fmt.Sprint(item.(map[string]interface{})["id"])
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": item.Title,
+			"url":   "https://sspai.com/post/" + fmt.Sprint(item.ID),
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://cdn-static.sspai.com/favicon/sspai.ico" // 64 x 64
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "少数派",
+		"icon":    "https://cdn-static.sspai.com/favicon/sspai.ico", // 64 x 64
+		"obj":     obj,
+	}
 	return api
 }

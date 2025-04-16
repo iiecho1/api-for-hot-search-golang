@@ -5,10 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"strconv"
 )
+
+type souhuResponse struct {
+	Data []newsArticles `json:"newsArticles"`
+}
+type newsArticles struct {
+	Title string  `json:"title"`
+	ID    float64 `json:"newsId"`
+	Hot   string  `json:"score"`
+}
 
 func Souhu() map[string]interface{} {
 	url := "https://3g.k.sohu.com/api/channel/hotchart/hotnews.go?page=1"
@@ -18,26 +26,28 @@ func Souhu() map[string]interface{} {
 	// 2.读取页面内容
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll")
-	var resultMap map[string]interface{}
+	var resultMap souhuResponse
 	_ = json.Unmarshal(pageBytes, &resultMap)
 
-	wordList := resultMap["newsArticles"]
-
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "搜狐新闻"
+	wordList := resultMap.Data
 
 	var obj []map[string]interface{}
-	for index, item := range wordList.([]interface{}) {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.(map[string]interface{})["title"]
-		hot, _ := strconv.ParseFloat(item.(map[string]interface{})["score"].(string), 64)
-		result["hotValue"] = fmt.Sprint(math.Round(hot/1000)/10) + "万"
-		result["url"] = "https://3g.k.sohu.com/t/n" + strconv.FormatFloat(item.(map[string]interface{})["newsId"].(float64), 'f', -1, 64) + "?serialId=94c07e6320f9c8a0b40c55059f0cedef"
-		obj = append(obj, result)
+	for index, item := range wordList {
+		hotValue, err := strconv.ParseFloat(item.Hot, 64)
+		utils.HandleError(err, "strconv.ParseFloat")
+		obj = append(obj, map[string]interface{}{
+			"index":    index + 1,
+			"title":    item.Title,
+			"url":      "https://3g.k.sohu.com/t/n" + strconv.FormatFloat(item.ID, 'f', -1, 64) + "?serialId=94c07e6320f9c8a0b40c55059f0cedef",
+			"hotValue": fmt.Sprintf("%.2f万", hotValue),
+		})
+
 	}
-	api["obj"] = obj
-	api["icon"] = "https://3g.k.sohu.com/favicon.ico" // 48 x 48
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "搜狐新闻",
+		"icon":    "https://3g.k.sohu.com/favicon.ico", // 48 x 48
+		"obj":     obj,
+	}
 	return api
 }

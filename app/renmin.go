@@ -17,12 +17,7 @@ func Renminwang() map[string]interface{} {
 	pattern := `<li><a href="(.*?)" target="_blank">(.*?)</a></li>`
 	matched := utils.ExtractMatches(string(pageBytes), pattern)
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "人民网"
-
 	var obj []map[string]interface{}
-
 	for index, item := range matched {
 		result := make(map[string]interface{})
 		result["index"] = index + 1
@@ -30,7 +25,11 @@ func Renminwang() map[string]interface{} {
 		result["url"] = item[1]
 		obj = append(obj, result)
 	}
-	api["obj"] = obj
-	api["icon"] = "http://www.people.com.cn/favicon.ico" // 16 x 16
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "人民网",
+		"icon":    "http://www.people.com.cn/favicon.ico", // 16 x 16
+		"obj":     obj,
+	}
 	return api
 }
