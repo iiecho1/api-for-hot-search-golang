@@ -8,6 +8,26 @@ import (
 	"net/http"
 )
 
+type qqResponse struct {
+	IdList []idListItem `json:"idlist"`
+}
+
+type idListItem struct {
+	IdsHash  string     `json:"ids_hash"`
+	NewsList []newsItem `json:"newslist"`
+}
+
+type newsItem struct {
+	Title    string   `json:"title"`
+	Url      string   `json:"url"`
+	Time     string   `json:"time"`
+	HotEvent hotEvent `json:"hotEvent"`
+}
+
+type hotEvent struct {
+	HotScore float64 `json:"hotScore"`
+}
+
 func Qqnews() map[string]interface{} {
 	url := "https://r.inews.qq.com/gw/event/hot_ranking_list?page_size=51"
 	resp, err := http.Get(url)
@@ -15,29 +35,35 @@ func Qqnews() map[string]interface{} {
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll")
-	resultMap := make(map[string]interface{})
-	_ = json.Unmarshal(pageBytes, &resultMap)
 
-	newslist := resultMap["idlist"].([]interface{})[0].(map[string]interface{})["newslist"].([]interface{})
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "腾讯新闻"
+	// 使用结构体解析响应
+	var result qqResponse
+	_ = json.Unmarshal(pageBytes, &result)
+
+	// 获取新闻列表数据
+	newsListData := result.IdList[0].NewsList
 
 	var obj []map[string]interface{}
-
-	for index, item := range newslist {
-		if index > 0 {
-			result := make(map[string]interface{})
-			result["index"] = index
-			result["title"] = item.(map[string]interface{})["title"]
-			result["url"] = item.(map[string]interface{})["url"]
-			result["time"] = item.(map[string]interface{})["time"]
-			hot := item.(map[string]interface{})["hotEvent"].(map[string]interface{})["hotScore"].(float64) / 10000
-			result["hotValue"] = fmt.Sprintf("%.1f", hot) + "万"
-			obj = append(obj, result)
+	for index, item := range newsListData {
+		if index == 0 {
+			continue
 		}
+		hot := item.HotEvent.HotScore / 10000
+		hotValue := fmt.Sprintf("%.1f万", hot)
+
+		obj = append(obj, map[string]interface{}{
+			"index":    index,
+			"title":    item.Title,
+			"url":      item.Url,
+			"time":     item.Time,
+			"hotValue": hotValue,
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://mat1.gtimg.com/qqcdn/qqindex2021/favicon.ico" // 96 x 96
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "腾讯新闻",
+		"icon":    "https://mat1.gtimg.com/qqcdn/qqindex2021/favicon.ico", // 96 x 96
+		"obj":     obj,
+	}
 	return api
 }
