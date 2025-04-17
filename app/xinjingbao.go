@@ -17,20 +17,20 @@ func Xinjingbao() map[string]interface{} {
 	pattern := `<h3>\s*<a class="link" href="([^"]+)"[^>]*>\s*<span[^>]*>\d*</span>\s*(.*?)</a>\s*</h3>[\s\S]*?</i>(.*?)</span>`
 	matched := utils.ExtractMatches(string(pageBytes), pattern)
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "新京报"
-
 	var obj []map[string]interface{}
 	for index, item := range matched {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item[2]
-		result["url"] = item[1]
-		result["hotValue"] = item[3]
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index":    index + 1,
+			"title":    item[2],
+			"url":      item[1],
+			"hotValue": item[3],
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://www.bjnews.com.cn/favicon.ico" // 20 x 20
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "新京报",
+		"icon":    "https://www.bjnews.com.cn/favicon.ico", // 20 x 20
+		"obj":     obj,
+	}
 	return api
 }

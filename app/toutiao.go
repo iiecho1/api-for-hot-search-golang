@@ -9,6 +9,15 @@ import (
 	"strconv"
 )
 
+type ttResponse struct {
+	Data []ttData `json:"data"`
+}
+type ttData struct {
+	Title    string `json:"Title"`
+	URL      string `json:"Url"`
+	HotValue string `json:"HotValue"`
+}
+
 func Toutiao() map[string]interface{} {
 	url := "https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc"
 	resp, err := http.Get(url)
@@ -16,27 +25,27 @@ func Toutiao() map[string]interface{} {
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll")
-	resultMap := make(map[string]interface{})
+	var resultMap ttResponse
 	_ = json.Unmarshal(pageBytes, &resultMap)
 
-	data := resultMap["data"].([]interface{})
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "今日头条"
+	data := resultMap.Data
 
 	var obj []map[string]interface{}
-
 	for index, item := range data {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.(map[string]interface{})["Title"]
-		result["url"] = item.(map[string]interface{})["Url"]
-		hot, err := strconv.ParseFloat(item.(map[string]interface{})["HotValue"].(string), 64)
+		hot, err := strconv.ParseFloat(item.HotValue, 64)
 		utils.HandleError(err, "strconv.ParseFloat")
-		result["hotValue"] = fmt.Sprintf("%.1f", hot/10000) + "万"
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index":    index + 1,
+			"title":    item.Title,
+			"url":      item.URL,
+			"hotValue": fmt.Sprintf("%.1f万", hot/10000),
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://lf3-static.bytednsdoc.com/obj/eden-cn/pipieh7nupabozups/toutiao_web_pc/tt-icon.png" // 144 x 144
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "今日头条",
+		"icon":    "https://lf3-static.bytednsdoc.com/obj/eden-cn/pipieh7nupabozups/toutiao_web_pc/tt-icon.png", // 144 x 144
+		"obj":     obj,
+	}
 	return api
 }

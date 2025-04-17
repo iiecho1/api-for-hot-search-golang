@@ -3,10 +3,21 @@ package app
 import (
 	"api/utils"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
+
+type zhResponse struct {
+	Data []zhData `json:"data"`
+}
+type zhData struct {
+	Target zhTarget `json:"target"`
+}
+type zhTarget struct {
+	Title string `json:"title"`
+	URL   string `json:"url"`
+}
 
 func Zhihu() map[string]interface{} {
 	url := "https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total?limit=50&desktop=true"
@@ -15,27 +26,25 @@ func Zhihu() map[string]interface{} {
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll")
-	resultMap := make(map[string]interface{})
+	var resultMap zhResponse
 	err = json.Unmarshal(pageBytes, &resultMap)
 	utils.HandleError(err, "json.Unmarshal")
 
-	data := resultMap["data"]
-
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "知乎"
+	data := resultMap.Data
 
 	var obj []map[string]interface{}
-
-	for index, item := range data.([]interface{}) {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item.(map[string]interface{})["target"].(map[string]interface{})["title"]
-		id := item.(map[string]interface{})["target"].(map[string]interface{})["id"]
-		result["url"] = "https://www.zhihu.com/question/" + fmt.Sprintf("%.f", id)
-		obj = append(obj, result)
+	for index, item := range data {
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": item.Target.Title,
+			"url":   strings.Replace(item.Target.URL, "api.zhihu.com/questions", "www.zhihu.com/question", 1),
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://static.zhihu.com/static/favicon.ico" // 32 x 32
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "知乎",
+		"icon":    "https://static.zhihu.com/static/favicon.ico", // 32 x 32
+		"obj":     obj,
+	}
 	return api
 }

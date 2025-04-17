@@ -18,24 +18,22 @@ func WangyiNews() map[string]interface{} {
 	pattern := `<em>\d*</em>\s*<a href="([^"]+)"[^>]*>(.*?)</a>\s*<span>(\d*)</span>`
 	matched := utils.ExtractMatches(string(pageBytes), pattern)
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "网易新闻"
-
 	var obj []map[string]interface{}
-
 	for index, item := range matched {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item[2]
-		result["url"] = item[1]
 		hot, err := strconv.ParseFloat(item[3], 64)
 		utils.HandleError(err, "strconv.ParseFloat")
-
-		result["hotValue"] = fmt.Sprintf("%.1f万", hot/10000)
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index":    index + 1,
+			"title":    item[2],
+			"url":      item[1],
+			"hotValue": fmt.Sprintf("%.1f万", hot/10000),
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://news.163.com/favicon.ico" // 16 x 16
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "网易新闻",
+		"icon":    "https://news.163.com/favicon.ico", // 16 x 16
+		"obj":     obj,
+	}
 	return api
 }

@@ -6,8 +6,18 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 )
+
+type wbResponse struct {
+	Item wbItem `json:"data"`
+}
+type wbItem struct {
+	Data []wbData `json:"realtime"`
+}
+type wbData struct {
+	Title    string  `json:"word"`
+	HotValue float64 `json:"num"`
+}
 
 func WeiboHot() map[string]interface{} {
 	url := "https://weibo.com/ajax/side/hotSearch"
@@ -18,27 +28,26 @@ func WeiboHot() map[string]interface{} {
 	// 2.读取页面内容
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll error")
-	var resultMap map[string]interface{}
+	var resultMap wbResponse
 	err = json.Unmarshal(pageBytes, &resultMap)
 	utils.HandleError(err, "json.Unmarshal error")
 
-	realtimeList := resultMap["data"].(map[string]interface{})["realtime"].([]interface{})
-	// 遍历结果
-	json := make(map[string]interface{})
-	json["code"] = 200
-	json["success"] = "success"
-	json["message"] = "微博"
+	realtimeList := resultMap.Item.Data
 
 	obj := []map[string]interface{}{}
-	for key, value := range realtimeList {
-		result := make(map[string]interface{})
-		result["id"] = key + 1
-		result["title"] = value.(map[string]interface{})["note"]
-		result["url"] = "https://s.weibo.com/weibo?q=" + strings.Replace(fmt.Sprint(result["title"]), " ", "%20", -1)
-		result["hotValue"] = value.(map[string]interface{})["raw_hot"]
-		obj = append(obj, result)
+	for index, item := range realtimeList {
+		obj = append(obj, map[string]interface{}{
+			"index":    index + 1,
+			"title":    item.Title,
+			"url":      "https://s.weibo.com/weibo?q=" + item.Title,
+			"hotValue": fmt.Sprintf("%.1f万", item.HotValue/10000),
+		})
 	}
-	json["obj"] = obj
-	json["icon"] = "https://www.weibo.com/favicon.ico" // 32 x 32
-	return json
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "微博",
+		"icon":    "https://www.weibo.com/favicon.ico", // 32 x 32
+		"obj":     obj,
+	}
+	return api
 }

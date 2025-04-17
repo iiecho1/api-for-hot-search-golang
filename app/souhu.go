@@ -38,7 +38,7 @@ func Souhu() map[string]interface{} {
 		obj = append(obj, map[string]interface{}{
 			"index":    index + 1,
 			"title":    item.Title,
-			"url":      "https://3g.k.sohu.com/t/n" + strconv.FormatFloat(item.ID, 'f', -1, 64) + "?serialId=94c07e6320f9c8a0b40c55059f0cedef",
+			"url":      "https://search.sohu.com/?queryType=edit&keyword=" + item.Title,
 			"hotValue": fmt.Sprintf("%.2f万", hotValue),
 		})
 
