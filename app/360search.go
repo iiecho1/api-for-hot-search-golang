@@ -10,7 +10,6 @@ import (
 )
 
 type search360Item struct {
-	URL       string `json:"url"`
 	LongTitle string `json:"long_title"`
 	Title     string `json:"title"`
 	Score     string `json:"score"`
@@ -43,7 +42,7 @@ func Search360() map[string]interface{} {
 			"index":    item.Rank,
 			"title":    title,
 			"hotValue": fmt.Sprintf("%.1f万", hot/10000),
-			"url":      item.URL,
+			"url":      "https://www.so.com/s?q=" + title,
 		})
 	}
 	api := map[string]interface{}{
