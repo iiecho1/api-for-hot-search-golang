@@ -17,20 +17,19 @@ func Doc360() map[string]interface{} {
 	pattern := `<div class=" num\d* yzphlist hei"><a href="(.*?)".*?>(?:<span class="icon_yuan2"></span>)?(.*?)</a></div>`
 	matched := utils.ExtractMatches(string(pageBytes), pattern)
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "360doc"
-
 	var obj []map[string]interface{}
-
 	for index, item := range matched {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = item[2]
-		result["url"] = item[1]
-		obj = append(obj, result)
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": item[2],
+			"url":   item[1],
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "http://www.360doc.com/favicon.ico" // 16 x 16
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "360doc",
+		"icon":    "http://www.360doc.com/favicon.ico", // 16 x 16
+		"obj":     obj,
+	}
 	return api
 }

@@ -13,15 +13,15 @@ func Ithome() map[string]interface{} {
 	defer resp.Body.Close()
 	pageBytes, err := io.ReadAll(resp.Body)
 	utils.HandleError(err, "io.ReadAll")
-	pattern := `<p class="plc-title">(.*?)<\/p>.*?<a href="(.*?)"`
+	pattern := `<a\s+href="(https?://[^"]+)"[^>]*>.*?<p\s+class="plc-title">(.*?)</p>`
 	matches := utils.ExtractMatches(string(pageBytes), pattern)
 
 	var obj []map[string]interface{}
 	for index, item := range matches[:12] {
 		obj = append(obj, map[string]interface{}{
 			"index": index + 1,
-			"title": item[1],
-			"url":   item[2],
+			"title": item[2],
+			"url":   item[1],
 		})
 	}
 	api := map[string]interface{}{
