@@ -8,7 +8,7 @@ import (
 
 func All() map[string]interface{} {
 	// 定义一个函数列表，方便循环调用
-	funcs := map[string]func() map[string]interface{}{
+	funcs := map[string]func() (map[string]interface{}, error){
 		"360搜索":  app.Search360,
 		"哔哩哔哩":   app.Bilibili,
 		"AcFun":  app.Acfun,
@@ -42,29 +42,30 @@ func All() map[string]interface{} {
 	}
 
 	allResult := make(map[string]interface{})
-
-	// 使用并发来调用各个函数
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
 	for key, fn := range funcs {
 		wg.Add(1)
-		go func(k string, f func() map[string]interface{}) {
+		go func(k string, f func() (map[string]interface{}, error)) {
 			defer wg.Done()
-			result := f()
+			result, err := f()
+			if err != nil {
+				fmt.Printf("%s 请求失败: %v\n", k, err)
+				return
+			}
 
-			// 检查是否调用成功（假设成功时 code 为 200）
 			if result["code"] == 200 {
 				mu.Lock()
 				allResult[k] = result["obj"]
 				mu.Unlock()
 			}
-			// 如果失败，则不添加到 allResult 中
 		}(key, fn)
 	}
 
 	wg.Wait()
-	fmt.Println(len(allResult))
+	fmt.Println("成功获取的热搜数量:", len(allResult))
+
 	return map[string]interface{}{
 		"code": 200,
 		"obj":  allResult,

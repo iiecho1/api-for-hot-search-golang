@@ -1,7 +1,6 @@
 package app
 
 import (
-	"api/utils"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,7 +15,7 @@ func stripHTML(htmlString string) string {
 	// 使用 html.Parse 解析 HTML 字符串
 	doc, err := html.Parse(strings.NewReader(htmlString))
 	if err != nil {
-		fmt.Println("解析HTML时出错:", err)
+		// 解析失败时返回原始字符串
 		return htmlString
 	}
 
@@ -43,36 +42,99 @@ func stripHTML(htmlString string) string {
 	return result.String()
 }
 
-func History() map[string]interface{} {
+func History() (map[string]interface{}, error) {
+	// 创建带超时的 HTTP 客户端
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
 	currentTime := time.Now()
 	month := fmt.Sprintf("%02d", currentTime.Month())
 	day := fmt.Sprintf("%02d", currentTime.Day())
-	url := "https://baike.baidu.com/cms/home/eventsOnHistory/" + fmt.Sprint(month) + ".json"
-	resp, err := http.Get(url)
-	utils.HandleError(err, "http.Get")
+	url := "https://baike.baidu.com/cms/home/eventsOnHistory/" + month + ".json"
+
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("http.Get error: %w", err)
+	}
 	defer resp.Body.Close()
+
 	pageBytes, err := io.ReadAll(resp.Body)
-	utils.HandleError(err, "io.ReadAll error")
+	if err != nil {
+		return nil, fmt.Errorf("io.ReadAll error: %w", err)
+	}
+
 	var resultMap map[string]interface{}
 	err = json.Unmarshal(pageBytes, &resultMap)
-	utils.HandleError(err, "io.json.Unmarshal error")
+	if err != nil {
+		return nil, fmt.Errorf("json.Unmarshal error: %w", err)
+	}
 
-	date := fmt.Sprintf("%v%v", month, day)
-	dateList := resultMap[month].(map[string]interface{})[date]
+	// 检查数据结构
+	monthData, ok := resultMap[month].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("API返回数据格式异常: 月份数据不存在")
+	}
 
-	api := make(map[string]interface{})
-	api["code"] = 200
-	api["message"] = "历史上的今天"
+	date := month + day
+	dateListInterface, ok := monthData[date]
+	if !ok {
+		return nil, fmt.Errorf("今天(%s月%s日)没有历史事件数据", month, day)
+	}
+
+	dateList, ok := dateListInterface.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("API返回数据格式异常: 日期列表格式不正确")
+	}
+
+	// 检查数据是否为空
+	if len(dateList) == 0 {
+		return map[string]interface{}{
+			"code":    500,
+			"message": "今天(" + month + "月" + day + "日)没有历史事件数据",
+			"icon":    "https://baike.baidu.com/favicon.ico",
+			"obj":     []map[string]interface{}{},
+		}, nil
+	}
 
 	var obj []map[string]interface{}
-	for index, item := range dateList.([]interface{}) {
-		result := make(map[string]interface{})
-		result["index"] = index + 1
-		result["title"] = stripHTML(item.(map[string]interface{})["title"].(string))
-		result["url"] = item.(map[string]interface{})["link"]
-		obj = append(obj, result)
+	for index, item := range dateList {
+		itemMap, ok := item.(map[string]interface{})
+		if !ok {
+			continue // 跳过格式不正确的项
+		}
+
+		// 提取标题
+		titleInterface, ok := itemMap["title"]
+		if !ok {
+			continue
+		}
+		title, ok := titleInterface.(string)
+		if !ok {
+			continue
+		}
+
+		// 提取链接
+		urlInterface, ok := itemMap["link"]
+		urlStr := ""
+		if ok {
+			if link, ok := urlInterface.(string); ok {
+				urlStr = link
+			}
+		}
+
+		obj = append(obj, map[string]interface{}{
+			"index": index + 1,
+			"title": stripHTML(title),
+			"url":   urlStr,
+		})
 	}
-	api["obj"] = obj
-	api["icon"] = "https://baike.baidu.com/favicon.ico" // 64 x 64
-	return api
+
+	api := map[string]interface{}{
+		"code":    200,
+		"message": "历史上的今天",
+		"icon":    "https://baike.baidu.com/favicon.ico", // 64 x 64
+		"obj":     obj,
+	}
+	return api, nil
 }
