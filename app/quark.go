@@ -1,12 +1,12 @@
 package app
 
 import (
-	"api/utils"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type quarkResponse struct {
@@ -24,17 +24,40 @@ type quarkItem struct {
 	HotValue string `json:"hot"`
 }
 
-func Quark() map[string]interface{} {
+func Quark() (map[string]interface{}, error) {
+	// 创建带超时的 HTTP 客户端
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
 	url := "https://biz.quark.cn/api/trending/ranking/getNewsRanking?modules=hotNews&uc_param_str=dnfrpfbivessbtbmnilauputogpintnwmtsvcppcprsnnnchmicckpgixsnx"
-	resp, err := http.Get(url)
-	utils.HandleError(err, "http.Get error")
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("http.Get error: %w", err)
+	}
 	defer resp.Body.Close()
+	// 检查状态码
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("HTTP请求失败，状态码: %d", resp.StatusCode)
+	}
 	pageBytes, err := io.ReadAll(resp.Body)
-	utils.HandleError(err, "io.ReadAll error")
+	if err != nil {
+		return nil, fmt.Errorf("io.ReadAll error: %w", err)
+	}
 	var resultMap quarkResponse
 	err = json.Unmarshal(pageBytes, &resultMap)
-	utils.HandleError(err, "json.Unmarshal error")
-
+	if err != nil {
+		return nil, fmt.Errorf("json.Unmarshal error: %w", err)
+	}
+	// 检查数据是否为空
+	if len(resultMap.Data.HotNews.Item) == 0 {
+		return map[string]interface{}{
+			"code":    500,
+			"message": "API返回数据为空",
+			"icon":    "https://gw.alicdn.com/imgextra/i3/O1CN018r2tKf28YP7ev0fPF_!!6000000007944-2-tps-48-48.png",
+			"obj":     []map[string]interface{}{},
+		}, nil
+	}
 	data := resultMap.Data.HotNews.Item
 	obj := make([]map[string]interface{}, 0, len(data))
 
@@ -58,5 +81,5 @@ func Quark() map[string]interface{} {
 		"obj":     obj,
 		"icon":    "https://gw.alicdn.com/imgextra/i3/O1CN018r2tKf28YP7ev0fPF_!!6000000007944-2-tps-48-48.png",
 	}
-	return api
+	return api, nil
 }
