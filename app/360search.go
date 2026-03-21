@@ -36,16 +36,15 @@ func Search360() (map[string]interface{}, error) {
 	}
 
 	obj := make([]map[string]interface{}, 0, len(resultSlice))
-	for _, item := range resultSlice {
+	for i, item := range resultSlice {
 		title := item.Title
 		if item.LongTitle != "" {
 			title = item.LongTitle
 		}
 		hot, _ := strconv.ParseFloat(item.Score, 64)
-		entry := utils.BuildItem(0, title,
+		entry := utils.BuildItem(i+1, title,
 			"https://www.so.com/s?q="+title,
 			map[string]string{"hotValue": fmt.Sprintf("%.1f万", hot/10000)})
-		entry["index"] = item.Rank
 		obj = append(obj, entry)
 	}
 
