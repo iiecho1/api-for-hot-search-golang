@@ -74,4 +74,4 @@ go build -o hot-search-api .
 
 ---
 
-🤖 本项目由 [OpenClaw](https://github.com/openclaw/openclaw) AI 助手完成代码重构与优化。
+🤖 本项目由 [OpenClaw](https://github.com/openclaw/openclaw) AI 助手完成代码重构与优化。（AI太强了，旧代码在old分支）
