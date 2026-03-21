@@ -3,6 +3,8 @@ package app
 import (
 	"api/utils"
 	"fmt"
+	"net/url"
+	"strings"
 )
 
 type doubanItem struct {
@@ -12,14 +14,14 @@ type doubanItem struct {
 }
 
 func Douban() (map[string]interface{}, error) {
-	url := "https://m.douban.com/rexxar/api/v2/chart/hot_search_board?count=10&start=0"
+	apiURL := "https://m.douban.com/rexxar/api/v2/chart/hot_search_board?count=10&start=0"
 
 	headers := map[string]string{
 		"Referer": "https://www.douban.com/gallery/",
 	}
 
 	var items []doubanItem
-	if err := utils.FetchJSON(url, &items, headers); err != nil {
+	if err := utils.FetchJSON(apiURL, &items, headers); err != nil {
 		return nil, fmt.Errorf("FetchJSON error: %w", err)
 	}
 
@@ -34,7 +36,20 @@ func Douban() (map[string]interface{}, error) {
 		if item.Score > 0 {
 			hotValue = fmt.Sprintf("%.2f万", item.Score/10000)
 		}
-		obj = append(obj, utils.BuildItem(index+1, item.Name, item.URI,
+		// douban:// 协议转为 HTTPS 搜索链接
+		link := item.URI
+		if strings.HasPrefix(link, "douban://") {
+			// 提取 q= 参数
+			if u, err := url.Parse(link); err == nil {
+				if q := u.Query().Get("q"); q != "" {
+					link = "https://www.douban.com/search?q=" + url.QueryEscape(q)
+				}
+			}
+			if strings.HasPrefix(link, "douban://") {
+				link = "https://www.douban.com/search?q=" + url.QueryEscape(item.Name)
+			}
+		}
+		obj = append(obj, utils.BuildItem(index+1, item.Name, link,
 			map[string]string{"hotValue": hotValue}))
 	}
 
