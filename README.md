@@ -71,3 +71,7 @@ go build -o hot-search-api .
 ├── app/           # 30+ 数据源实现
 └── utils/utils.go # 共享工具（HTTP/JSON/响应构建）
 ```
+
+---
+
+🤖 本项目由 [OpenClaw](https://github.com/openclaw/openclaw) AI 助手完成代码重构与优化。
