@@ -1,49 +1,73 @@
-## 目前包含30个app，不断添加中
-## 代码很简单粗暴，以后再精简优化
+# 🔥 Hot Search API
 
-+ 360搜索
-+ 哔哩哔哩
-+ AcFun
-+ CSDN
-+ 懂球帝
-+ 豆瓣
-+ 抖音
-+ GitHub
-+ 国家地理
-+ 历史上的今天
-+ 虎扑
-+ IT之家
-+ 梨视频
-+ 澎湃新闻
-+ 腾讯新闻
-+ 少数派
-+ 搜狗
-+ 今日头条
-+ V2EX
-+ 网易新闻
-+ 微博
-+ 新京报
-+ 知乎
-+ 夸克
-+ 搜狐
-+ 百度
-+ 人民网
-+ 南方周末
-+ 360doc
-+ CCTV新闻
+基于 **Gin** 框架的高性能热搜聚合 API 服务，支持 30+ 中外主流平台实时数据抓取。
 
-## 运行
+## ✨ 特性
 
-`go run main.go`
+- **30+ 数据源** — 百度、微博、抖音、知乎、GitHub 等主流平台
+- **高并发聚合** — `/all` 接口 goroutine 并发抓取，8 秒超时
+- **统一工具库** — 共享 HTTP 客户端、JSON 解析、响应构建
+- **零外部依赖** — 编译为单个二进制，开箱即用
+- **健康检查** — 内置 `/health` 端点
 
-默认端口为1111，可以自己改。
+## 🚀 快速开始
 
-浏览器打开`ip:1111`
+```bash
+# 运行
+go run main.go
 
-具体路径看`main.go`中的路由表
+# 或编译后运行
+go build -o hot-search-api .
+./hot-search-api
+```
 
-比如访问百度的热搜就是：`ip:1111/baidu`
+## 📡 API 端点
 
-查看全部app的热搜为`ip:1111/all`
+| 路径 | 平台 | 路径 | 平台 |
+|------|------|------|------|
+| `/baidu` | 百度 | `/weibo` | 微博 |
+| `/douyin` | 抖音 | `/zhihu` | 知乎 |
+| `/bilibili` | 哔哩哔哩 | `/github` | GitHub |
+| `/toutiao` | 今日头条 | `/csdn` | CSDN |
+| `/v2ex` | V2EX | `/douban` | 豆瓣 |
+| `/hupu` | 虎扑 | `/ithome` | IT之家 |
+| `/sougou` | 搜狗 | `/qqnews` | 腾讯新闻 |
+| `/pengpai` | 澎湃新闻 | `/cctv` | CCTV |
+| `/renmin` | 人民网 | `/wangyinews` | 网易新闻 |
+| `/acfun` | AcFun | `/dongqiudi` | 懂球帝 |
+| `/lishipin` | 梨视频 | `/shaoshupai` | 少数派 |
+| `/souhu` | 搜狐 | `/quark` | 夸克 |
+| `/xinjingbao` | 新京报 | `/nanfang` | 南方周末 |
+| `/guojiadili` | 国家地理 | `/history` | 历史上的今天 |
+| `/360search` | 360搜索 | `/360doc` | 360doc |
+| **`/all`** | **聚合所有源** | `/health` | 健康检查 |
 
-建议`go build`为可执行文件。
+### 响应格式
+
+```json
+{
+  "code": 200,
+  "message": "百度",
+  "icon": "https://www.baidu.com/favicon.ico",
+  "obj": [
+    { "index": 1, "title": "热搜标题", "url": "...", "hotValue": "12345" }
+  ]
+}
+```
+
+## ⚙️ 配置
+
+| 环境变量 | 默认值 | 说明 |
+|----------|--------|------|
+| `PORT` | `1111` | 监听端口 |
+| `RELEASE` | `false` | Gin Release 模式 |
+| `ENV` | `development` | 环境标识 |
+
+## 📦 项目结构
+
+```
+├── main.go        # 入口 + 路由注册
+├── all/all.go     # 聚合逻辑（并发 + 超时控制）
+├── app/           # 30+ 数据源实现
+└── utils/utils.go # 共享工具（HTTP/JSON/响应构建）
+```

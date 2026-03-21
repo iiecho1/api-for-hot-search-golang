@@ -3,81 +3,41 @@ package app
 import (
 	"api/utils"
 	"fmt"
-	"io"
-	"net/http"
-	"time"
 )
 
 func Ithome() (map[string]interface{}, error) {
-	// 创建带超时的 HTTP 客户端
-	client := &http.Client{
-		Timeout: 10 * time.Second,
-	}
-
 	url := "https://m.ithome.com/rankm/"
-	resp, err := client.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("http.Get error: %w", err)
-	}
-	defer resp.Body.Close()
 
-	// 检查状态码
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("HTTP请求失败,状态码: %d", resp.StatusCode)
-	}
-
-	pageBytes, err := io.ReadAll(resp.Body)
+	pageContent, err := utils.GetHTML(url)
 	if err != nil {
-		return nil, fmt.Errorf("io.ReadAll error: %w", err)
+		return nil, fmt.Errorf("GetHTML error: %w", err)
 	}
 
 	pattern := `<a href="(https://m\.ithome\.com/html/\d+\.htm)"[^>]*>[\s\S]*?<p class="plc-title">([^<]+)</p>`
-	matches := utils.ExtractMatches(string(pageBytes), pattern)
+	matched := utils.ExtractMatches(pageContent, pattern)
 
-	// 检查是否匹配到数据
-	if len(matches) == 0 {
-		return map[string]interface{}{
-			"code":    500,
-			"message": "未匹配到数据，可能页面结构已变更",
-			"icon":    "https://www.ithome.com/favicon.ico",
-			"obj":     []map[string]interface{}{},
-		}, nil
+	if len(matched) == 0 {
+		return utils.BuildErrorResponse("IT之家", "https://www.ithome.com/favicon.ico",
+			"未匹配到数据，可能页面结构已变更"), nil
 	}
 
-	// 确定要取多少条数据（最多12条）
-	count := len(matches)
+	count := len(matched)
 	if count > 12 {
 		count = 12
 	}
 
-	var obj []map[string]interface{}
+	obj := make([]map[string]interface{}, 0, count)
 	for index := 0; index < count; index++ {
-		item := matches[index]
-		// 添加边界检查
+		item := matched[index]
 		if len(item) >= 3 {
-			obj = append(obj, map[string]interface{}{
-				"index": index + 1,
-				"title": item[2],
-				"url":   item[1],
-			})
+			obj = append(obj, utils.BuildItem(index+1, item[2], item[1]))
 		}
 	}
 
-	// 确保有有效数据
 	if len(obj) == 0 {
-		return map[string]interface{}{
-			"code":    500,
-			"message": "处理后的数据为空",
-			"icon":    "https://www.ithome.com/favicon.ico",
-			"obj":     []map[string]interface{}{},
-		}, nil
+		return utils.BuildErrorResponse("IT之家", "https://www.ithome.com/favicon.ico",
+			"处理后的数据为空"), nil
 	}
 
-	api := map[string]interface{}{
-		"code":    200,
-		"message": "IT之家",
-		"icon":    "https://www.ithome.com/favicon.ico", // 32 x 32
-		"obj":     obj,
-	}
-	return api, nil
+	return utils.BuildSuccessResponse("IT之家", "https://www.ithome.com/favicon.ico", obj), nil
 }
