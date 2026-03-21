@@ -3,93 +3,115 @@ package main
 import (
 	"api/all"
 	"api/app"
+	"api/utils"
+	"log"
+	"net/http"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	port := getEnv("PORT", "1111")
+	releaseMode := getEnv("RELEASE", "false") == "true"
+
+	if releaseMode {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	r := gin.Default()
+	registerRoutes(r)
 
-	// 创建路由映射，使用包装函数
-	routes := map[string]func(c *gin.Context){
-		"/bilibili":   createHandler(app.Bilibili),
-		"/360search":  createHandler(app.Search360),
-		"/acfun":      createHandler(app.Acfun),
-		"/csdn":       createHandler(app.CSDN),
-		"/dongqiudi":  createHandler(app.Dongqiudi),
-		"/douban":     createHandler(app.Douban),
-		"/douyin":     createHandler(app.Douyin),
-		"/github":     createHandler(app.Github),
-		"/guojiadili": createHandler(app.Guojiadili),
-		"/history":    createHandler(app.History),
-		"/hupu":       createHandler(app.Hupu),
-		"/ithome":     createHandler(app.Ithome),
-		"/lishipin":   createHandler(app.Lishipin),
-		"/pengpai":    createHandler(app.Pengpai),
-		"/qqnews":     createHandler(app.Qqnews),
-		"/shaoshupai": createHandler(app.Shaoshupai),
-		"/sougou":     createHandler(app.Sougou),
-		"/toutiao":    createHandler(app.Toutiao),
-		"/v2ex":       createHandler(app.V2ex),
-		"/wangyinews": createHandler(app.WangyiNews),
-		"/weibo":      createHandler(app.WeiboHot),
-		"/xinjingbao": createHandler(app.Xinjingbao),
-		"/zhihu":      createHandler(app.Zhihu),
-		"/kuake":      createHandler(app.Quark),
-		"/souhu":      createHandler(app.Souhu),
-		"/baidu":      createHandler(app.Baidu),
-		"/renmin":     createHandler(app.Renminwang),
-		"/nanfang":    createHandler(app.Nanfangzhoumo),
-		"/360doc":     createHandler(app.Doc360),
-		"/cctv":       createHandler(app.CCTV),
-		"/all":        allHandler, // 单独处理 all，因为它签名不同
+	// 健康检查端点
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, map[string]interface{}{
+			"status": "ok",
+			"time":   time.Now().Unix(),
+			"port":   port,
+		})
+	})
+
+	addr := ":" + port
+	log.Printf("🔥 服务器启动: http://localhost%s (环境: %s)", addr, getEnv("ENV", "development"))
+	if err := r.Run(addr); err != nil {
+		log.Fatalf("❌ 服务器启动失败: %v", err)
 	}
-
-	// 注册路由
-	for path, handler := range routes {
-		r.GET(path, handler)
-	}
-
-	r.Run(":1111")
 }
 
-// 创建通用处理器函数，处理返回 error 的函数
-func createHandler(fn func() (map[string]interface{}, error)) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		result, err := fn()
-		if err != nil {
-			// 发生错误时返回错误响应
-			c.JSON(500, map[string]interface{}{
-				"code":    500,
-				"message": "服务器内部错误: " + err.Error(),
-				"obj":     []map[string]interface{}{},
-			})
-			return
+func registerRoutes(r *gin.Engine) {
+	// 通用处理器工厂
+	handler := func(fn func() (map[string]interface{}, error)) gin.HandlerFunc {
+		return func(c *gin.Context) {
+			result, err := fn()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, utils.BuildErrorResponse(
+					"服务器内部错误", "", err.Error()))
+				return
+			}
+			if code, ok := result["code"].(int); ok && code != 200 {
+				c.JSON(code, result)
+				return
+			}
+			c.JSON(http.StatusOK, result)
 		}
+	}
 
-		// 检查 API 返回的 code
+	// 注册所有应用路由
+	routes := map[string]func(c *gin.Context){
+		"/bilibili":   handler(app.Bilibili),
+		"/360search":  handler(app.Search360),
+		"/acfun":      handler(app.Acfun),
+		"/csdn":       handler(app.CSDN),
+		"/dongqiudi":  handler(app.Dongqiudi),
+		"/douban":     handler(app.Douban),
+		"/douyin":     handler(app.Douyin),
+		"/github":     handler(app.Github),
+		"/guojiadili": handler(app.Guojiadili),
+		"/history":    handler(app.History),
+		"/hupu":       handler(app.Hupu),
+		"/ithome":     handler(app.Ithome),
+		"/lishipin":   handler(app.Lishipin),
+		"/pengpai":    handler(app.Pengpai),
+		"/qqnews":     handler(app.Qqnews),
+		"/shaoshupai": handler(app.Shaoshupai),
+		"/sougou":     handler(app.Sougou),
+		"/toutiao":    handler(app.Toutiao),
+		"/v2ex":       handler(app.V2ex),
+		"/wangyinews": handler(app.WangyiNews),
+		"/weibo":      handler(app.WeiboHot),
+		"/xinjingbao": handler(app.Xinjingbao),
+		"/zhihu":      handler(app.Zhihu),
+		"/kuake":      handler(app.Quark),
+		"/souhu":      handler(app.Souhu),
+		"/baidu":      handler(app.Baidu),
+		"/renmin":     handler(app.Renminwang),
+		"/nanfang":    handler(app.Nanfangzhoumo),
+		"/360doc":     handler(app.Doc360),
+		"/cctv":       handler(app.CCTV),
+		"/all":        allHandler(),
+	}
+
+	for path, h := range routes {
+		r.GET(path, h)
+	}
+}
+
+// allHandler 创建 /all 的聚合处理器
+func allHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		result := all.All()
 		if code, ok := result["code"].(int); ok && code != 200 {
-			// API 返回业务错误
 			c.JSON(code, result)
 			return
 		}
-
-		// 成功返回
-		c.JSON(200, result)
+		c.JSON(http.StatusOK, result)
 	}
 }
 
-// allHandler 专门处理 all.All() 函数
-func allHandler(c *gin.Context) {
-	result := all.All()
-
-	// 检查 API 返回的 code
-	if code, ok := result["code"].(int); ok && code != 200 {
-		// API 返回业务错误
-		c.JSON(code, result)
-		return
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
 	}
-
-	// 成功返回
-	c.JSON(200, result)
+	return defaultValue
 }

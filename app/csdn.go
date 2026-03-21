@@ -1,17 +1,18 @@
 package app
 
 import (
+	"api/utils"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 )
 
-type csdbResponse struct {
+type csdnResponse struct {
 	Data []csdnData `json:"data"`
 }
+
 type csdnData struct {
 	Title    string `json:"articleTitle"`
 	URL      string `json:"articleDetailUrl"`
@@ -19,55 +20,40 @@ type csdnData struct {
 }
 
 func CSDN() (map[string]interface{}, error) {
-	// 创建自定义 Transport，跳过 TLS 验证（仅用于测试）
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true, // 跳过证书验证
-		},
-	}
+	url := "https://blog.csdn.net/phoenix/web/blog/hotRank?&pageSize=100"
 
 	client := &http.Client{
-		Transport: tr,
-		Timeout:   10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+		Timeout: 10 * 1e9,
 	}
 
-	url := "https://blog.csdn.net/phoenix/web/blog/hotRank?&pageSize=100"
 	resp, err := client.Get(url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http.Get error: %w", err)
 	}
 	defer resp.Body.Close()
-	// 检查状态码
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("HTTP请求失败，状态码: %d", resp.StatusCode)
 	}
-	pageBytes, err := io.ReadAll(resp.Body)
+
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("io.ReadAll error: %w", err)
 	}
 
-	var resultMap csdbResponse
-	err = json.Unmarshal(pageBytes, &resultMap)
-	if err != nil {
-		return nil, err
+	var resultMap csdnResponse
+	if err := json.Unmarshal(body, &resultMap); err != nil {
+		return nil, fmt.Errorf("json.Unmarshal error: %w", err)
 	}
 
-	data := resultMap.Data
-	var obj []map[string]interface{}
-	for index, item := range data {
-		obj = append(obj, map[string]interface{}{
-			"index":    index + 1,
-			"title":    item.Title,
-			"url":      item.URL,
-			"hotValue": item.HotValue,
-		})
+	obj := make([]map[string]interface{}, 0, len(resultMap.Data))
+	for index, item := range resultMap.Data {
+		obj = append(obj, utils.BuildItem(index+1, item.Title, item.URL,
+			map[string]string{"hotValue": item.HotValue}))
 	}
 
-	api := map[string]interface{}{
-		"code":    200,
-		"message": "CSDN",
-		"icon":    "https://csdnimg.cn/public/favicon.ico",
-		"obj":     obj,
-	}
-	return api, nil
+	return utils.BuildSuccessResponse("CSDN", "https://csdnimg.cn/public/favicon.ico", obj), nil
 }
