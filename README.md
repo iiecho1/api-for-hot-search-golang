@@ -1,10 +1,10 @@
 # 🔥 Hot Search API
 
-基于 **Gin** 框架的高性能热搜聚合 API 服务，支持 30+ 中外主流平台实时数据抓取。
+基于 **Gin** 框架的高性能热搜聚合 API 服务，支持 30+ 中外主流平台实时数据抓取。为 [hot_searches_for_apps](https://github.com/iiecho1/hot_searches_for_apps) 提供数据接口。
 
 ## ✨ 特性
 
-- **30+ 数据源** — 百度、微博、抖音、知乎、GitHub 等主流平台
+- **32个数据源** — 百度、微博、抖音、知乎、GitHub 等主流平台
 - **高并发聚合** — `/all` 接口 goroutine 并发抓取，8 秒超时
 - **统一工具库** — 共享 HTTP 客户端、JSON 解析、响应构建
 - **零外部依赖** — 编译为单个二进制，开箱即用
@@ -72,3 +72,9 @@ go build -o hot-search-api .
 ├── app/           # 30+ 数据源实现
 └── utils/utils.go # 共享工具（HTTP/JSON/响应构建）
 ```
+
+## 相关项目
+
+- [hot_searches_for_apps](https://github.com/iiecho1/hot_searches_for_apps) — 热搜归档脚本（每小时定时拉取）
+
+🤖 本项目由 OpenClaw AI 助手完成代码重构与优化。（AI太强了，旧代码在old分支）
