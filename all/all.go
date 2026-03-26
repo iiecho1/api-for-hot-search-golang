@@ -14,6 +14,7 @@ const defaultTimeout = 8 * time.Second
 // sources 定义所有数据源
 var sources = map[string]func() (map[string]interface{}, error){
 	"360搜索":   app.Search360,
+	"36氪":     app.Kr36,
 	"哔哩哔哩":   app.Bilibili,
 	"AcFun":    app.Acfun,
 	"CSDN":     app.CSDN,
@@ -39,6 +40,7 @@ var sources = map[string]func() (map[string]interface{}, error){
 	"夸克":      app.Quark,
 	"搜狐":      app.Souhu,
 	"百度":      app.Baidu,
+	"百度贴吧":   app.Tieba,
 	"人民网":    app.Renminwang,
 	"南方周末":   app.Nanfangzhoumo,
 	"360doc":   app.Doc360,
