@@ -1,5 +1,7 @@
 # 🔥 Hot Search API
 
+> ⚠️ **重要通知**：360doc 将于 2026年5月1日闭站，自 2026年4月1日起不再发布新内容。该数据源4月1日起停止更新。
+
 基于 **Gin** 框架的高性能热搜聚合 API 服务，支持 30+ 中外主流平台实时数据抓取。为 [hot_searches_for_apps](https://github.com/iiecho1/hot_searches_for_apps) 提供数据接口。
 
 ## ✨ 特性
@@ -40,7 +42,7 @@ go build -o hot-search-api .
 | `/souhu` | 搜狐 | `/quark` | 夸克 |
 | `/xinjingbao` | 新京报 | `/nanfang` | 南方周末 |
 | `/guojiadili` | 国家地理 | `/history` | 历史上的今天 |
-| `/360search` | 360搜索 | `/360doc` | 360doc |
+| `/360search` | 360搜索 | `/360doc` | 360doc ⚠️ *将于2026年5月1日闭站，不再更新* |
 | **`/all`** | **聚合所有源** | `/health` | 健康检查 |
 
 ### 响应格式
