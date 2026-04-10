@@ -3,7 +3,6 @@ package app
 import (
 	"api/utils"
 	"fmt"
-	"net/url"
 )
 
 type douyinResponse struct {
@@ -31,13 +30,12 @@ func Douyin() (map[string]interface{}, error) {
 
 	obj := make([]map[string]interface{}, 0, len(resultMap.WordList))
 	for index, item := range resultMap.WordList {
-		encodedTitle := url.QueryEscape(item.Title)
 		hotValue := ""
 		if item.HotValue > 0 {
 			hotValue = fmt.Sprintf("%.2f万", item.HotValue/10000)
 		}
 		obj = append(obj, utils.BuildItem(index+1, item.Title,
-			"https://www.douyin.com/search/"+encodedTitle,
+			"https://www.douyin.com/search/"+item.Title,
 			map[string]string{"hotValue": hotValue}))
 	}
 

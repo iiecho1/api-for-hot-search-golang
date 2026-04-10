@@ -3,33 +3,40 @@ package app
 import (
 	"api/utils"
 	"fmt"
+	"strconv"
 )
 
+type sougouResponse struct {
+	Main []sougouItem `json:"main"`
+}
+
+type sougouItem struct {
+	Title string `json:"title"`
+	URL   string `json:"url"`
+	Score string `json:"score"`
+}
+
 func Sougou() (map[string]interface{}, error) {
-	url := "https://www.sogou.com/web?query=%E6%90%9C%E7%8B%97%E7%83%AD%E6%90%9C"
+	apiURL := "https://hotlist.imtt.qq.com/Fetch"
 
-	headers := map[string]string{
-		"Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-		"Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+	var result sougouResponse
+	if err := utils.FetchJSON(apiURL, &result, nil); err != nil {
+		return nil, fmt.Errorf("FetchJSON error: %w", err)
 	}
 
-	pageContent, err := utils.FetchHTML(url, headers)
-	if err != nil {
-		return nil, fmt.Errorf("FetchHTML error: %w", err)
-	}
-
-	pattern := `<span [^>]*>[\s\S]*?<p>\s*<a href="([^"]+)"[^>]*>(.*?)</a>\s*</p>[\s\S]*?</span>\s*<span class="hot-rank-right">(.*?)</span>`
-	matched := utils.ExtractMatches(pageContent, pattern)
-
-	if len(matched) == 0 {
+	if len(result.Main) == 0 {
 		return utils.BuildErrorResponse("搜狗", "https://www.sogou.com/favicon.ico",
-			"未匹配到数据，可能页面结构已变更"), nil
+			"API返回数据为空"), nil
 	}
 
-	obj := make([]map[string]interface{}, 0, len(matched))
-	for index, item := range matched {
-		obj = append(obj, utils.BuildItem(index+1, item[2], item[1],
-			map[string]string{"hotValue": item[3]}))
+	obj := make([]map[string]interface{}, 0, len(result.Main))
+	for index, item := range result.Main {
+		hotValue := ""
+		if score, err := strconv.ParseFloat(item.Score, 64); err == nil {
+			hotValue = fmt.Sprintf("%.1f万", score)
+		}
+		obj = append(obj, utils.BuildItem(index+1, item.Title, item.URL,
+			map[string]string{"hotValue": hotValue}))
 	}
 
 	return utils.BuildSuccessResponse("搜狗", "https://www.sogou.com/favicon.ico", obj), nil

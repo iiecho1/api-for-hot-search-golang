@@ -22,7 +22,7 @@ func main() {
 	}
 
 	r := gin.Default()
-	
+
 	// 配置CORS中间件
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
@@ -32,7 +32,7 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-	
+
 	registerRoutes(r)
 
 	// 健康检查端点
@@ -99,7 +99,6 @@ func registerRoutes(r *gin.Engine) {
 		"/baidu":      handler(app.Baidu),
 		"/renmin":     handler(app.Renminwang),
 		"/nanfang":    handler(app.Nanfangzhoumo),
-		"/360doc":     handler(app.Doc360),
 		"/36kr":       handler(app.Kr36),
 		"/cctv":       handler(app.CCTV),
 		"/tieba":      handler(app.Tieba),

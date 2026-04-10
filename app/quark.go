@@ -25,7 +25,7 @@ type quarkItem struct {
 }
 
 func Quark() (map[string]interface{}, error) {
-	url := "https://biz.quark.cn/api/trending/ranking/getNewsRanking?modules=hotNews&uc_param_str=dnfrpfbivessbtbmnilauputogpintnwmtsvcppcprsnnnchmicckpgixsnx"
+	url := "https://biz.quark.cn/api/trending/ranking/getNewsRanking?modules=hotNews&uc_param_str=dnf"
 
 	var resultMap quarkResponse
 	if err := utils.FetchJSON(url, &resultMap, nil); err != nil {

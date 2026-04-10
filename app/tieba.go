@@ -20,10 +20,10 @@ type tiebaTopic struct {
 }
 
 func Tieba() (map[string]interface{}, error) {
-	url := "https://tieba.baidu.com/c/f/pc/homeSidebarRight?subapp_type=pc&_client_type=20&sign=e9b101df871c39eedcf9a232c2d26ec8"
+	apiURL := "https://tieba.baidu.com/c/f/pc/homeSidebarRight?subapp_type=pc&_client_type=20&sign=e9b101df871c39eedcf9a232c2d26ec8"
 
 	var resultMap tiebaResponse
-	if err := utils.FetchJSON(url, &resultMap, nil); err != nil {
+	if err := utils.FetchJSON(apiURL, &resultMap, nil); err != nil {
 		return nil, fmt.Errorf("FetchJSON error: %w", err)
 	}
 
@@ -35,9 +35,9 @@ func Tieba() (map[string]interface{}, error) {
 	obj := make([]map[string]interface{}, 0, len(resultMap.Data.HotTopicList))
 	for index, item := range resultMap.Data.HotTopicList {
 		hot := float64(item.DiscussNum) / 10000
-		url := fmt.Sprintf("https://tieba.baidu.com/f?kw=%s&ie=utf-8", item.TopicName)
+		link := fmt.Sprintf("https://tieba.baidu.com/hottopic/browse/hottopic?topic_id=%d&topic_name=%s", item.TopicID, item.TopicName)
 
-		obj = append(obj, utils.BuildItem(index+1, item.TopicName, url,
+		obj = append(obj, utils.BuildItem(index+1, item.TopicName, link,
 			map[string]string{"hotValue": fmt.Sprintf("%.1f万", hot)}))
 	}
 

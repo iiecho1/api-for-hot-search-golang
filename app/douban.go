@@ -36,16 +36,19 @@ func Douban() (map[string]interface{}, error) {
 		if item.Score > 0 {
 			hotValue = fmt.Sprintf("%.2f万", item.Score/10000)
 		}
-		// douban:// 协议转为 HTTPS 搜索链接
+		// douban:// 协议或无效链接转为 HTTPS 搜索链接
 		link := item.URI
-		if strings.HasPrefix(link, "douban://") {
-			// 提取 q= 参数
-			if u, err := url.Parse(link); err == nil {
-				if q := u.Query().Get("q"); q != "" {
-					link = "https://www.douban.com/search?q=" + url.QueryEscape(q)
+		if strings.HasPrefix(link, "douban://") || !strings.HasPrefix(link, "http") {
+			// 尝试从 douban:// 链接提取 q= 参数
+			if strings.HasPrefix(link, "douban://") {
+				if u, err := url.Parse(link); err == nil {
+					if q := u.Query().Get("q"); q != "" {
+						link = "https://www.douban.com/search?q=" + url.QueryEscape(q)
+					}
 				}
 			}
-			if strings.HasPrefix(link, "douban://") {
+			// 如果仍然是 douban:// 或无效链接，使用名称作为搜索词
+			if !strings.HasPrefix(link, "http") {
 				link = "https://www.douban.com/search?q=" + url.QueryEscape(item.Name)
 			}
 		}
