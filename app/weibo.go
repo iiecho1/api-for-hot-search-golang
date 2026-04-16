@@ -11,10 +11,10 @@ func WeiboHot() (map[string]interface{}, error) {
 	url := "https://s.weibo.com/top/summary"
 
 	headers := map[string]string{
-		"Cookie":         "SUB=_2AkMasdasdqadTy2Pna4Rl77p7cJZAXC",
-		"Accept":         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+		"Cookie":          "SUB=_2AkMasasdasdaQDADsasdQDQD",
+		"Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 		"Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-		"Referer":        "https://s.weibo.com/",
+		"Referer":         "https://s.weibo.com/",
 	}
 
 	pageContent, err := utils.FetchHTML(url, headers)
