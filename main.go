@@ -23,19 +23,17 @@ func main() {
 
 	r := gin.Default()
 
-	// 配置CORS中间件
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
+		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
+		AllowCredentials: false,
 		MaxAge:           12 * time.Hour,
 	}))
 
 	registerRoutes(r)
 
-	// 健康检查端点
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, map[string]interface{}{
 			"status": "ok",
@@ -45,17 +43,16 @@ func main() {
 	})
 
 	addr := ":" + port
-	log.Printf("🔥 服务器启动: http://localhost%s (环境: %s)", addr, getEnv("ENV", "development"))
+	log.Printf("服务器启动: http://localhost%s (环境: %s)", addr, getEnv("ENV", "development"))
 	if err := r.Run(addr); err != nil {
-		log.Fatalf("❌ 服务器启动失败: %v", err)
+		log.Fatalf("服务器启动失败: %v", err)
 	}
 }
 
 func registerRoutes(r *gin.Engine) {
-	// 通用处理器工厂
-	handler := func(fn func() (map[string]interface{}, error)) gin.HandlerFunc {
+	handler := func(cacheKey string, fn func() (map[string]interface{}, error)) gin.HandlerFunc {
 		return func(c *gin.Context) {
-			result, err := fn()
+			result, err := utils.WithCache(cacheKey, utils.DefaultCacheTTL, fn)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, utils.BuildErrorResponse(
 					"服务器内部错误", "", err.Error()))
@@ -69,39 +66,38 @@ func registerRoutes(r *gin.Engine) {
 		}
 	}
 
-	// 注册所有应用路由
-	routes := map[string]func(c *gin.Context){
-		"/bilibili":   handler(app.Bilibili),
-		"/360search":  handler(app.Search360),
-		"/acfun":      handler(app.Acfun),
-		"/csdn":       handler(app.CSDN),
-		"/dongqiudi":  handler(app.Dongqiudi),
-		"/douban":     handler(app.Douban),
-		"/douyin":     handler(app.Douyin),
-		"/github":     handler(app.Github),
-		"/guojiadili": handler(app.Guojiadili),
-		"/history":    handler(app.History),
-		"/hupu":       handler(app.Hupu),
-		"/ithome":     handler(app.Ithome),
-		"/lishipin":   handler(app.Lishipin),
-		"/pengpai":    handler(app.Pengpai),
-		"/qqnews":     handler(app.Qqnews),
-		"/shaoshupai": handler(app.Shaoshupai),
-		"/sougou":     handler(app.Sougou),
-		"/toutiao":    handler(app.Toutiao),
-		"/v2ex":       handler(app.V2ex),
-		"/wangyinews": handler(app.WangyiNews),
-		"/weibo":      handler(app.WeiboHot),
-		"/xinjingbao": handler(app.Xinjingbao),
-		"/zhihu":      handler(app.Zhihu),
-		"/kuake":      handler(app.Quark),
-		"/souhu":      handler(app.Souhu),
-		"/baidu":      handler(app.Baidu),
-		"/renmin":     handler(app.Renminwang),
-		"/nanfang":    handler(app.Nanfangzhoumo),
-		"/36kr":       handler(app.Kr36),
-		"/cctv":       handler(app.CCTV),
-		"/tieba":      handler(app.Tieba),
+	routes := map[string]gin.HandlerFunc{
+		"/bilibili":   handler("bilibili", app.Bilibili),
+		"/360search":  handler("360search", app.Search360),
+		"/acfun":      handler("acfun", app.Acfun),
+		"/csdn":       handler("csdn", app.CSDN),
+		"/dongqiudi":  handler("dongqiudi", app.Dongqiudi),
+		"/douban":     handler("douban", app.Douban),
+		"/douyin":     handler("douyin", app.Douyin),
+		"/github":     handler("github", app.Github),
+		"/guojiadili": handler("guojiadili", app.Guojiadili),
+		"/history":    handler("history", app.History),
+		"/hupu":       handler("hupu", app.Hupu),
+		"/ithome":     handler("ithome", app.Ithome),
+		"/lishipin":   handler("lishipin", app.Lishipin),
+		"/pengpai":    handler("pengpai", app.Pengpai),
+		"/qqnews":     handler("qqnews", app.Qqnews),
+		"/shaoshupai": handler("shaoshupai", app.Shaoshupai),
+		"/sougou":     handler("sougou", app.Sougou),
+		"/toutiao":    handler("toutiao", app.Toutiao),
+		"/v2ex":       handler("v2ex", app.V2ex),
+		"/wangyinews": handler("wangyinews", app.WangyiNews),
+		"/weibo":      handler("weibo", app.WeiboHot),
+		"/xinjingbao": handler("xinjingbao", app.Xinjingbao),
+		"/zhihu":      handler("zhihu", app.Zhihu),
+		"/quark":      handler("quark", app.Quark),
+		"/souhu":      handler("souhu", app.Souhu),
+		"/baidu":      handler("baidu", app.Baidu),
+		"/renmin":     handler("renmin", app.Renminwang),
+		"/nanfang":    handler("nanfang", app.Nanfangzhoumo),
+		"/36kr":       handler("36kr", app.Kr36),
+		"/cctv":       handler("cctv", app.CCTV),
+		"/tieba":      handler("tieba", app.Tieba),
 		"/all":        allHandler(),
 	}
 
@@ -110,7 +106,6 @@ func registerRoutes(r *gin.Engine) {
 	}
 }
 
-// allHandler 创建 /all 的聚合处理器
 func allHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		result := all.All()
