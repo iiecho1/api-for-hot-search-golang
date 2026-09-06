@@ -8,8 +8,42 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
+
+// ---- 缓存 ----
+
+var (
+	cacheMu      sync.RWMutex
+	cacheStore   = map[string]cacheEntry{}
+	DefaultCacheTTL = 5 * time.Minute
+)
+
+type cacheEntry struct {
+	data      map[string]interface{}
+	expiresAt time.Time
+}
+
+// WithCache 带 TTL 的简易内存缓存
+func WithCache(key string, ttl time.Duration, fn func() (map[string]interface{}, error)) (map[string]interface{}, error) {
+	cacheMu.RLock()
+	if e, ok := cacheStore[key]; ok && time.Now().Before(e.expiresAt) {
+		cacheMu.RUnlock()
+		return e.data, nil
+	}
+	cacheMu.RUnlock()
+
+	data, err := fn()
+	if err != nil {
+		return nil, err
+	}
+
+	cacheMu.Lock()
+	cacheStore[key] = cacheEntry{data: data, expiresAt: time.Now().Add(ttl)}
+	cacheMu.Unlock()
+	return data, nil
+}
 
 // Item 表示一个热搜条目
 type Item struct {
